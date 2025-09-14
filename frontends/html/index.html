@@ -29,6 +29,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#about">About</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="test-backend.html" target="_blank" title="Test Backend Connection">
+                            <i class="fas fa-server"></i>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -49,7 +54,7 @@
                     <div class="d-grid gap-3 d-md-flex">
                         <div class="dropdown">
                             <button class="btn btn-primary btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-2"></i>Customer Login
+                                <i class="fas fa-user me-2"></i>Customer
                             </button>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="customer-login.html">
@@ -58,11 +63,18 @@
                                 <li><a class="dropdown-item" href="customer-register.html">
                                     <i class="fas fa-user-plus me-2"></i>Register
                                 </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="services.html">
+                                    <i class="fas fa-search me-2"></i>Browse Services
+                                </a></li>
+                                <li><a class="dropdown-item" href="my-bookings.html">
+                                    <i class="fas fa-calendar-alt me-2"></i>My Bookings
+                                </a></li>
                             </ul>
                         </div>
                         <div class="dropdown">
                             <button class="btn btn-outline-light btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-hard-hat me-2"></i>Worker Login
+                                <i class="fas fa-hard-hat me-2"></i>Worker
                             </button>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="worker-login.html">
@@ -73,6 +85,9 @@
                                 </a></li>
                             </ul>
                         </div>
+                        <a href="services.html" class="btn btn-success btn-lg">
+                            <i class="fas fa-rocket me-2"></i>Find Services Now
+                        </a>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -168,6 +183,53 @@
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-shield-alt text-info me-2"></i>
                                 <span>Secure Platform</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="mt-5">
+                        <h4 class="mb-3">Contact Us</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-phone text-primary me-3"></i>
+                                    <div>
+                                        <small class="text-muted">Customer Support</small>
+                                        <div class="fw-semibold">+91 98765 43210</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-envelope text-primary me-3"></i>
+                                    <div>
+                                        <small class="text-muted">Email Support</small>
+                                        <div class="fw-semibold">support@servicehub.com</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-headset text-primary me-3"></i>
+                                    <div>
+                                        <small class="text-muted">Emergency Helpline</small>
+                                        <div class="fw-semibold">1800-123-HELP</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-map-marker-alt text-primary me-3"></i>
+                                    <div>
+                                        <small class="text-muted">Your Location</small>
+                                        <div class="fw-semibold" id="userLocation">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="getLocation()">
+                                                <i class="fas fa-location-arrow me-1"></i>Get Location
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
