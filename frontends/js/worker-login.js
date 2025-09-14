@@ -1,6 +1,6 @@
 // Worker Login JavaScript
 // Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080';
 
 document.addEventListener('DOMContentLoaded', function() {
     const workerLogin = new WorkerLogin();
@@ -328,14 +328,14 @@ class WorkerLogin {
             this.handleRememberMe();
 
             // Call backend API
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            const response = await fetch(`${API_BASE_URL}/auth/signIn`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ...loginData,
-                    userType: 'worker'
+                    email: loginData.email,
+                    password: loginData.password
                 })
             });
 
@@ -359,16 +359,12 @@ class WorkerLogin {
     }
 
     handleLoginResponse(response) {
-        if (response.success || response.user) {
-            const user = response.user || response.data;
-            
+        if (response.jwt && response.message === 'Login Success') {
             // Store user data and token
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            if (response.token) {
-                localStorage.setItem('authToken', response.token);
-            }
+            localStorage.setItem('authToken', response.jwt);
+            localStorage.setItem('userRole', response.role);
             
-            this.showSuccessMessage(`Welcome back, ${user.name || user.firstName + ' ' + user.lastName}! Redirecting to your dashboard...`);
+            this.showSuccessMessage(`Welcome back! Redirecting to your dashboard...`);
             
             // Redirect to worker dashboard
             setTimeout(() => {

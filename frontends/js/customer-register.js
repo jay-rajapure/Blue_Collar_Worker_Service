@@ -1,6 +1,6 @@
 // Customer Registration JavaScript
 // Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080';
 
 document.addEventListener('DOMContentLoaded', function() {
     const customerRegister = new CustomerRegister();
@@ -414,23 +414,9 @@ class CustomerRegister {
             return;
         }
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/auth/check-email`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, userType: 'customer' })
-            });
-            
-            const result = await response.json();
-            
-            if (!result.available) {
-                this.showFieldError(document.getElementById('email'), 'This email is already registered');
-            }
-        } catch (error) {
-            console.log('Email check failed, continuing with registration');
-        }
+        // Since we don't have email check endpoint, skip this check
+        // The backend will handle duplicate email validation during registration
+        console.log('Email validation will be handled during registration');
     }
 
     async submitRegistration() {
@@ -459,14 +445,16 @@ class CustomerRegister {
             };
 
             // Call backend API
-            const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+            const response = await fetch(`${API_BASE_URL}/auth/signUp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ...registrationData,
-                    userType: 'customer'
+                    name: registrationData.firstName + ' ' + registrationData.lastName,
+                    email: registrationData.email,
+                    passwordHash: registrationData.password,
+                    role: 'CUSTOMER'
                 })
             });
 
@@ -490,14 +478,12 @@ class CustomerRegister {
     }
 
     handleRegistrationResponse(response) {
-        if (response.success || response.user) {
-            const user = response.user || response.data;
+        if (response.jwt && response.message === 'Register Success') {
             this.showSuccessMessage('Account created successfully! Please check your email for verification.');
             
-            // Store user data if provided
-            if (user) {
-                localStorage.setItem('pendingCustomerUser', JSON.stringify(user));
-            }
+            // Store registration token
+            localStorage.setItem('authToken', response.jwt);
+            localStorage.setItem('userRole', response.role);
             
             // Clear form
             this.form.reset();

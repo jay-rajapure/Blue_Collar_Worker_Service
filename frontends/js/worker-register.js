@@ -1,6 +1,6 @@
 // Worker Registration JavaScript
 // Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080';
 
 document.addEventListener('DOMContentLoaded', function() {
     const workerRegister = new WorkerRegister();
@@ -489,23 +489,9 @@ class WorkerRegister {
             return;
         }
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/auth/check-email`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, userType: 'worker' })
-            });
-            
-            const result = await response.json();
-            
-            if (!result.available) {
-                this.showFieldError(document.getElementById('email'), 'This email is already registered');
-            }
-        } catch (error) {
-            console.log('Email check failed, continuing with registration');
-        }
+        // Since we don't have email check endpoint, skip this check
+        // The backend will handle duplicate email validation during registration
+        console.log('Email validation will be handled during registration');
     }
 
     async submitRegistration() {
@@ -538,14 +524,16 @@ class WorkerRegister {
             };
 
             // Call backend API
-            const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+            const response = await fetch(`${API_BASE_URL}/auth/signUp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ...registrationData,
-                    userType: 'worker'
+                    name: registrationData.firstName + ' ' + registrationData.lastName,
+                    email: registrationData.email,
+                    passwordHash: registrationData.password,
+                    role: 'WORKER'
                 })
             });
 
@@ -591,18 +579,15 @@ class WorkerRegister {
     }
 
     handleRegistrationResponse(response) {
-        if (response.success || response.user) {
-            const user = response.user || response.data;
+        if (response.jwt && response.message === 'Register Success') {
             this.showSuccessMessage(`
-                Welcome, ${user.name || user.firstName + ' ' + user.lastName}! 
-                ${user.workerId ? 'Your worker ID is ' + user.workerId + '. ' : ''}
+                Welcome! Your professional account has been created successfully!
                 Please check your email for verification instructions.
             `);
             
-            // Store user data if provided
-            if (user) {
-                localStorage.setItem('pendingWorkerUser', JSON.stringify(user));
-            }
+            // Store registration token
+            localStorage.setItem('authToken', response.jwt);
+            localStorage.setItem('userRole', response.role);
             
             // Clear form
             this.form.reset();

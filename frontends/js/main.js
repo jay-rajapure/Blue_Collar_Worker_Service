@@ -2,7 +2,7 @@
 // Utility functions and common functionality
 
 // Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080';
 
 // API Utility Functions
 class ApiClient {
@@ -399,8 +399,9 @@ class ServiceHub {
     // API Helper Methods
     static async checkBackendConnection() {
         try {
-            const response = await fetch(`${API_BASE_URL}/health`);
-            return response.ok;
+            // Use a simple GET request to auth endpoint to check if backend is running
+            const response = await fetch(`${API_BASE_URL}/auth/`);
+            return response.status !== 404; // Backend is running if we don't get 404
         } catch (error) {
             console.warn('Backend connection failed:', error);
             return false;
@@ -451,6 +452,259 @@ class ServiceHub {
 document.addEventListener('DOMContentLoaded', function() {
     window.serviceHub = new ServiceHub();
 });
+
+// Geolocation API Functions
+let userLocation = {
+    latitude: null,
+    longitude: null,
+    address: null
+};
+
+// Get user's current location
+function getLocation() {
+    const locationElement = document.getElementById('userLocation');
+    const button = locationElement.querySelector('button');
+    
+    if (!navigator.geolocation) {
+        showLocationError('Geolocation is not supported by this browser.');
+        return;
+    }
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Getting Location...';
+    button.disabled = true;
+    
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+    };
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            userLocation.latitude = position.coords.latitude;
+            userLocation.longitude = position.coords.longitude;
+            
+            // Get address from coordinates
+            reverseGeocode(position.coords.latitude, position.coords.longitude);
+        },
+        function(error) {
+            handleLocationError(error);
+            // Reset button
+            button.innerHTML = '<i class="fas fa-location-arrow me-1"></i>Get Location';
+            button.disabled = false;
+        },
+        options
+    );
+}
+
+// Reverse geocoding to get address from coordinates
+async function reverseGeocode(latitude, longitude) {
+    try {
+        // Using OpenStreetMap Nominatim API for reverse geocoding (free alternative)
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+        );
+        
+        if (response.ok) {
+            const data = await response.json();
+            const address = formatAddress(data);
+            userLocation.address = address;
+            
+            displayLocation(address, latitude, longitude);
+        } else {
+            throw new Error('Geocoding service unavailable');
+        }
+    } catch (error) {
+        console.error('Reverse geocoding error:', error);
+        // Fallback to just coordinates
+        const fallbackAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+        userLocation.address = fallbackAddress;
+        displayLocation(fallbackAddress, latitude, longitude);
+    }
+}
+
+// Format address from geocoding response
+function formatAddress(data) {
+    const address = data.address || {};
+    const parts = [];
+    
+    if (address.house_number && address.road) {
+        parts.push(`${address.house_number} ${address.road}`);
+    } else if (address.road) {
+        parts.push(address.road);
+    }
+    
+    if (address.neighbourhood || address.suburb) {
+        parts.push(address.neighbourhood || address.suburb);
+    }
+    
+    if (address.city || address.town || address.village) {
+        parts.push(address.city || address.town || address.village);
+    }
+    
+    if (address.state) {
+        parts.push(address.state);
+    }
+    
+    if (address.postcode) {
+        parts.push(address.postcode);
+    }
+    
+    return parts.length > 0 ? parts.join(', ') : data.display_name || 'Location found';
+}
+
+// Display the location in the UI
+function displayLocation(address, latitude, longitude) {
+    const locationElement = document.getElementById('userLocation');
+    
+    locationElement.innerHTML = `
+        <div class="location-result">
+            <div class="fw-semibold text-success mb-1">
+                <i class="fas fa-map-marker-alt me-1"></i>${address}
+            </div>
+            <div class="small text-muted">
+                Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}
+            </div>
+            <button class="btn btn-outline-secondary btn-sm mt-2" onclick="getLocation()">
+                <i class="fas fa-sync-alt me-1"></i>Update Location
+            </button>
+            <button class="btn btn-outline-info btn-sm mt-2 ms-2" onclick="showNearbyServices()">
+                <i class="fas fa-search me-1"></i>Find Services
+            </button>
+        </div>
+    `;
+    
+    // Store location in localStorage for later use
+    localStorage.setItem('userLocation', JSON.stringify(userLocation));
+    
+    // Show success message
+    showLocationSuccess('Location detected successfully!');
+}
+
+// Handle geolocation errors
+function handleLocationError(error) {
+    let message = '';
+    
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            message = 'Location access denied by user. Please enable location services.';
+            break;
+        case error.POSITION_UNAVAILABLE:
+            message = 'Location information is unavailable. Please try again.';
+            break;
+        case error.TIMEOUT:
+            message = 'Location request timed out. Please try again.';
+            break;
+        default:
+            message = 'An unknown error occurred while retrieving location.';
+            break;
+    }
+    
+    showLocationError(message);
+}
+
+// Show location error message
+function showLocationError(message) {
+    const locationElement = document.getElementById('userLocation');
+    locationElement.innerHTML = `
+        <div class="text-danger small">
+            <i class="fas fa-exclamation-triangle me-1"></i>${message}
+        </div>
+        <button class="btn btn-outline-primary btn-sm mt-2" onclick="getLocation()">
+            <i class="fas fa-location-arrow me-1"></i>Try Again
+        </button>
+    `;
+}
+
+// Show location success message
+function showLocationSuccess(message) {
+    // Create a temporary success message
+    const successDiv = document.createElement('div');
+    successDiv.className = 'alert alert-success alert-dismissible fade show mt-2';
+    successDiv.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const locationElement = document.getElementById('userLocation');
+    locationElement.appendChild(successDiv);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (successDiv.parentNode) {
+            successDiv.remove();
+        }
+    }, 3000);
+}
+
+// Show nearby services based on location
+function showNearbyServices() {
+    if (!userLocation.latitude || !userLocation.longitude) {
+        alert('Please get your location first!');
+        return;
+    }
+    
+    // This would integrate with your backend API to find nearby services
+    alert(`Finding services near ${userLocation.address}...\n\nThis feature will show nearby workers and services based on your location.`);
+    
+    // Example of how this might work with your backend:
+    // fetchNearbyServices(userLocation.latitude, userLocation.longitude);
+}
+
+// Function to fetch nearby services (integration with backend)
+async function fetchNearbyServices(latitude, longitude, radius = 10) {
+    try {
+        const response = await ApiClient.get(
+            `/api/works?lat=${latitude}&lon=${longitude}&radius=${radius}`
+        );
+        
+        console.log('Nearby services:', response);
+        return response;
+    } catch (error) {
+        console.error('Error fetching nearby services:', error);
+        throw error;
+    }
+}
+
+// Calculate distance between two coordinates (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c; // Distance in kilometers
+    
+    return distance;
+}
+
+// Convert degrees to radians
+function toRadians(degrees) {
+    return degrees * (Math.PI / 180);
+}
+
+// Auto-detect location on page load (with user permission)
+function autoDetectLocation() {
+    const savedLocation = localStorage.getItem('userLocation');
+    
+    if (savedLocation) {
+        const location = JSON.parse(savedLocation);
+        if (location.address) {
+            displayLocation(location.address, location.latitude, location.longitude);
+            userLocation = location;
+        }
+    }
+}
+
+// Call auto-detect when page loads
+if (document.getElementById('userLocation')) {
+    setTimeout(autoDetectLocation, 1000);
+}
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
