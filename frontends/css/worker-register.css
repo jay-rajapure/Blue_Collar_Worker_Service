@@ -1,0 +1,499 @@
+/* Worker Registration Specific Styles */
+
+.auth-container {
+    padding-top: 100px;
+    padding-bottom: 3rem;
+}
+
+.auth-card {
+    max-width: 1300px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.auth-form-section {
+    background: #fff;
+    padding: 2.5rem;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.auth-image-section {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    position: relative;
+}
+
+.auth-image-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="worker-tools" width="30" height="30" patternUnits="userSpaceOnUse"><rect width="30" height="30" fill="none"/><circle cx="15" cy="15" r="2" fill="white" opacity="0.2"/><path d="M10,10 L20,20 M20,10 L10,20" stroke="white" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23worker-tools)"/></svg>');
+    opacity: 0.4;
+}
+
+.auth-image-section > div {
+    position: relative;
+    z-index: 1;
+}
+
+/* Worker-specific color scheme */
+:root {
+    --worker-primary: #4facfe;
+    --worker-secondary: #00f2fe;
+    --worker-accent: #667eea;
+    --worker-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --section-border: #e3f2fd;
+}
+
+/* Section Headers */
+.section-header {
+    border-left: 4px solid var(--worker-primary);
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(90deg, var(--section-border) 0%, transparent 100%);
+    padding: 0.75rem 1rem;
+    border-radius: 0 10px 10px 0;
+}
+
+.section-header h5 {
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Form Elements */
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--worker-primary);
+    box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-control.is-valid, .form-select.is-valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Input Groups */
+.input-group-text {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-right: none;
+    color: #6c757d;
+    border-radius: 10px 0 0 10px;
+    font-weight: 500;
+}
+
+.input-group .form-control {
+    border-left: none;
+    border-radius: 0;
+}
+
+.input-group .btn {
+    border: 2px solid #e9ecef;
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.input-group .btn:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+/* Specialized styling for different input types */
+#specialization {
+    background: linear-gradient(45deg, #f8f9fa 0%, #e3f2fd 100%);
+}
+
+#experience, #serviceRadius {
+    font-weight: 500;
+}
+
+#skills {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    margin-top: 0.5rem;
+}
+
+.strength-bar {
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    background: #dc3545;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.strength-fill.weak {
+    width: 25%;
+    background: #dc3545;
+}
+
+.strength-fill.fair {
+    width: 50%;
+    background: #ffc107;
+}
+
+.strength-fill.good {
+    width: 75%;
+    background: var(--worker-primary);
+}
+
+.strength-fill.strong {
+    width: 100%;
+    background: #28a745;
+}
+
+.strength-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Checkbox Styling */
+.form-check-input {
+    width: 1.2em;
+    height: 1.2em;
+    border-radius: 6px;
+    border: 2px solid #dee2e6;
+    margin-top: 0.125em;
+}
+
+.form-check-input:checked {
+    background-color: var(--worker-primary);
+    border-color: var(--worker-primary);
+}
+
+.form-check-input:focus {
+    border-color: var(--worker-primary);
+    box-shadow: 0 0 0 0.25rem rgba(79, 172, 254, 0.25);
+}
+
+.form-check-label {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Special styling for required checkboxes */
+#agreeTerms:required + label::after,
+#backgroundCheck:required + label::after {
+    content: ' *';
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Button Styling */
+.btn-primary {
+    background: var(--worker-gradient);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+    background: linear-gradient(135deg, #3d8bfe 0%, #00d4ff 100%);
+}
+
+/* Links */
+.auth-link {
+    color: var(--worker-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.auth-link:hover {
+    color: var(--worker-secondary);
+    text-decoration: underline;
+}
+
+/* Benefits List Styling */
+.benefits-list {
+    text-align: left;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    padding: 0.25rem 0;
+}
+
+.benefit-item i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Animations */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.auth-form-section {
+    animation: slideInUp 0.8s ease-out;
+}
+
+.auth-image-section {
+    animation: slideInLeft 0.8s ease-out;
+}
+
+/* Staggered section animations */
+.section-header:nth-of-type(1) { animation-delay: 0.1s; }
+.section-header:nth-of-type(2) { animation-delay: 0.2s; }
+.section-header:nth-of-type(3) { animation-delay: 0.3s; }
+.section-header:nth-of-type(4) { animation-delay: 0.4s; }
+
+/* Loading State */
+.btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Error and Success States */
+.field-error {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: block;
+    font-weight: 500;
+}
+
+.field-success {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: block;
+    color: #28a745;
+    font-weight: 500;
+}
+
+/* Specialization-specific icons */
+select#specialization option[value="plumbing"]::before { content: "🔧 "; }
+select#specialization option[value="electrical"]::before { content: "⚡ "; }
+select#specialization option[value="carpentry"]::before { content: "🔨 "; }
+select#specialization option[value="painting"]::before { content: "🎨 "; }
+select#specialization option[value="driving"]::before { content: "🚗 "; }
+
+/* Custom scrollbar for form section */
+.auth-form-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.auth-form-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.auth-form-section::-webkit-scrollbar-thumb {
+    background: var(--worker-primary);
+    border-radius: 3px;
+}
+
+.auth-form-section::-webkit-scrollbar-thumb:hover {
+    background: var(--worker-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .auth-image-section {
+        min-height: 350px;
+        order: -1;
+    }
+    
+    .auth-form-section {
+        padding: 2rem 1.5rem;
+        max-height: none;
+        overflow-y: visible;
+    }
+    
+    .col-md-6, .col-md-4 {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        padding-top: 80px;
+        padding-bottom: 2rem;
+    }
+    
+    .auth-form-section {
+        padding: 1.5rem 1rem;
+    }
+    
+    .auth-image-section {
+        min-height: 300px;
+        padding: 2rem 1rem;
+    }
+    
+    .benefits-list {
+        max-width: 100%;
+    }
+    
+    .section-header {
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        padding: 12px 16px;
+        font-size: 15px;
+    }
+    
+    .form-control, .form-select {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .auth-card {
+        margin: 1rem;
+        border-radius: 15px;
+    }
+    
+    .auth-form-section {
+        padding: 1rem 0.75rem;
+    }
+    
+    .row > .col-md-6, .row > .col-md-4 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .input-group .btn {
+        padding: 10px 12px;
+    }
+    
+    .form-check-label {
+        font-size: 0.85rem;
+    }
+    
+    .section-header h5 {
+        font-size: 1rem;
+    }
+}
+
+/* Focus improvements for accessibility */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus,
+.btn:focus {
+    outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .form-control,
+    .form-select {
+        border-width: 3px;
+    }
+    
+    .btn-primary {
+        background: #000;
+        border: 2px solid #fff;
+    }
+    
+    .section-header {
+        border-left-width: 6px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .auth-form-section,
+    .auth-image-section,
+    .form-control,
+    .btn,
+    .section-header {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .auth-image-section {
+        display: none;
+    }
+    
+    .auth-form-section {
+        max-width: 100%;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .btn {
+        display: none;
+    }
+}
