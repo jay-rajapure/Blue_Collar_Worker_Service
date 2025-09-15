@@ -67,46 +67,142 @@ public class UsersController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt=jwtProvider.generateToken(authentication);
-        AuthResponse authResponse =new AuthResponse();
+        AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
         authResponse.setMessage("Register Success");
         authResponse.setRole(savedUser.getRole());
+        
+        // Add user details for registration response
+        authResponse.setUserId(savedUser.getId());
+        authResponse.setUserName(savedUser.getName());
+        authResponse.setUserEmail(savedUser.getEmail());
+        
+        // Set role-specific dashboard URLs for new users
+        if (Role.WORKER.equals(savedUser.getRole())) {
+            authResponse.setDashboardUrl("worker-dashboard.html");
+            authResponse.setWelcomeMessage("Registration successful! Welcome to your worker dashboard.");
+        } else if (Role.CUSTOMER.equals(savedUser.getRole())) {
+            authResponse.setDashboardUrl("services.html?view=customer");
+            authResponse.setWelcomeMessage("Registration successful! Start browsing services.");
+        } else {
+            authResponse.setDashboardUrl("services.html");
+            authResponse.setWelcomeMessage("Registration successful! Welcome to ServiceHub.");
+        }
 
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<AuthResponse>signin(@RequestBody LogInRequest req)
-    {
-        String username = req.getEmail();
-        String password = req.getPassword();
+    public ResponseEntity<AuthResponse> signin(@RequestBody LogInRequest req) {
+        try {
+            System.out.println("Login attempt for email: " + req.getEmail());
+            
+            String username = req.getEmail();
+            String password = req.getPassword();
 
-        Authentication authentication = authenticate(username,password);
+            if (username == null || username.trim().isEmpty()) {
+                System.out.println("Login failed: Email is null or empty");
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setMessage("Email is required");
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
 
-        Collection< ? extends GrantedAuthority>authorities=authentication.getAuthorities();
-        String role = authorities.isEmpty()?null:authorities.iterator().next().getAuthority();
+            if (password == null || password.trim().isEmpty()) {
+                System.out.println("Login failed: Password is null or empty");
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setMessage("Password is required");
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
 
-        String jwt=jwtProvider.generateToken(authentication);
+            Authentication authentication = authenticate(username, password);
+            System.out.println("Authentication successful for: " + username);
 
-        AuthResponse authResponse =new AuthResponse();
-        authResponse.setJwt(jwt);
-        authResponse.setMessage("Login Success");
-        authResponse.setRole(Role.valueOf(role));
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
+            System.out.println("User role: " + role);
 
-        return new ResponseEntity<>(authResponse, HttpStatus.OK);
+            String jwt = jwtProvider.generateToken(authentication);
+            System.out.println("JWT token generated successfully");
+
+            // Get user details for enhanced response
+            Users user = usersRepository.findByEmail(username).orElse(null);
+            
+            AuthResponse authResponse = new AuthResponse();
+            authResponse.setJwt(jwt);
+            authResponse.setMessage("Login Success");
+            authResponse.setRole(Role.valueOf(role));
+            
+            // Add user details and role-specific information
+            if (user != null) {
+                authResponse.setUserId(user.getId());
+                authResponse.setUserName(user.getName());
+                authResponse.setUserEmail(user.getEmail());
+                
+                // Set role-specific dashboard URLs
+                if (Role.WORKER.equals(user.getRole())) {
+                    authResponse.setDashboardUrl("worker-dashboard.html");
+                    authResponse.setWelcomeMessage("Welcome back! Ready to manage your services?");
+                } else if (Role.CUSTOMER.equals(user.getRole())) {
+                    authResponse.setDashboardUrl("services.html?view=customer");
+                    authResponse.setWelcomeMessage("Welcome! Find the perfect service for your needs.");
+                } else {
+                    authResponse.setDashboardUrl("services.html");
+                    authResponse.setWelcomeMessage("Welcome to ServiceHub!");
+                }
+            }
+
+            return new ResponseEntity<>(authResponse, HttpStatus.OK);
+            
+        } catch (BadCredentialsException e) {
+            System.out.println("Login failed: Bad credentials - " + e.getMessage());
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setMessage("Invalid email or password");
+            return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+            
+        } catch (UsernameNotFoundException e) {
+            System.out.println("Login failed: User not found - " + e.getMessage());
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setMessage("User not found");
+            return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+            
+        } catch (Exception e) {
+            System.out.println("Login failed: Unexpected error - " + e.getMessage());
+            e.printStackTrace();
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setMessage("Login failed due to server error");
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private Authentication authenticate(String username, String password) {
-        UserDetails userDetails =customerUserDetailService.loadUserByUsername(username);
-        if(userDetails == null)
-        {
+        try {
+            System.out.println("Attempting to authenticate user: " + username);
+            
+            UserDetails userDetails = customerUserDetailService.loadUserByUsername(username);
+            if (userDetails == null) {
+                System.out.println("Authentication failed: User details not found for " + username);
+                throw new BadCredentialsException("Invalid Username");
+            }
+            
+            System.out.println("User details loaded successfully for: " + username);
+            
+            if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+                System.out.println("Authentication failed: Password mismatch for " + username);
+                throw new BadCredentialsException("Invalid Password");
+            }
+            
+            System.out.println("Password verification successful for: " + username);
+            
+            return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            
+        } catch (UsernameNotFoundException e) {
+            System.out.println("Authentication failed: Username not found - " + e.getMessage());
             throw new BadCredentialsException("Invalid Username");
+        } catch (Exception e) {
+            System.out.println("Authentication failed: Unexpected error - " + e.getMessage());
+            e.printStackTrace();
+            throw new BadCredentialsException("Authentication failed");
         }
-        if(!passwordEncoder.matches(password,userDetails.getPassword()))
-        {
-            throw new BadCredentialsException("Invalid Password ");
-        }
-        return new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
     }
 
     // ✅ Get all users

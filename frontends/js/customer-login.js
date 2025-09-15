@@ -1,6 +1,6 @@
 // Customer Login JavaScript
-// Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+// Customer login functionality
+// Uses global API_BASE_URL from main.js
 
 document.addEventListener('DOMContentLoaded', function() {
     const customerLogin = new CustomerLogin();
@@ -267,12 +267,12 @@ class CustomerLogin {
             localStorage.setItem('authToken', response.jwt);
             localStorage.setItem('userRole', response.role);
             
-            this.showSuccessMessage('Login successful! Redirecting to dashboard...');
+            this.showSuccessMessage('Login successful! Redirecting to browse services...');
             
-            // Redirect to customer dashboard
+            // Redirect to services page (customers browse and book services)
             setTimeout(() => {
-                window.location.href = '../html/customer-dashboard.html'; // Update when dashboard is created
-                console.log('Redirecting to customer dashboard...');
+                window.location.href = 'services.html?view=customer';
+                console.log('Redirecting customer to browse services...');
             }, 1500);
         } else {
             this.showErrorMessage(response.message || 'Login failed. Please check your credentials.');

@@ -1,6 +1,6 @@
 // Customer Registration JavaScript
-// Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+// Customer registration functionality
+// Uses global API_BASE_URL from main.js
 
 document.addEventListener('DOMContentLoaded', function() {
     const customerRegister = new CustomerRegister();

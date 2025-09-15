@@ -9,6 +9,7 @@ import com.byteminds.blue.colller.worker.service.models.BookingStatus;
 import com.byteminds.blue.colller.worker.service.models.Users;
 import com.byteminds.blue.colller.worker.service.models.Work;
 import com.byteminds.blue.colller.worker.service.request.BookingRequest;
+import com.byteminds.blue.colller.worker.service.request.AutoBookingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,59 @@ public class BookingService {
     @Autowired
     private WorkRepository workRepository;
     
-    // Create a new booking
+    @Autowired
+    private WorkerAssignmentService workerAssignmentService;
+    
+    // Create a new booking with auto-assignment
+    public BookingResponse createAutoBooking(AutoBookingRequest request, Long customerId) throws Exception {
+        // Validate customer exists
+        Optional<Users> customerOpt = usersRepository.findById(customerId);
+        if (customerOpt.isEmpty()) {
+            throw new Exception("Customer not found");
+        }
+        
+        // Validate work exists
+        Optional<Work> workOpt = workRepository.findById(request.getWorkId());
+        if (workOpt.isEmpty()) {
+            throw new Exception("Work/Service not found");
+        }
+        
+        Users customer = customerOpt.get();
+        Work work = workOpt.get();
+        
+        // Create booking without worker assignment initially
+        Booking booking = new Booking(
+            customer, null, work,  // worker is null initially
+            request.getDescription(),
+            request.getScheduledDate(),
+            request.getCustomerAddress()
+        );
+        
+        booking.setCustomerPhone(request.getCustomerPhone());
+        booking.setSpecialInstructions(request.getSpecialInstructions());
+        booking.setEstimatedDurationHours(work.getEstimatedTimeHours());
+        booking.setTotalAmount(work.getCharges());
+        booking.setStatus(BookingStatus.PENDING);
+        
+        // Save booking first to get ID
+        Booking savedBooking = bookingRepository.save(booking);
+        
+        // Auto-assign best worker
+        Users assignedWorker = workerAssignmentService.assignBestWorker(savedBooking, work);
+        
+        if (assignedWorker != null) {
+            savedBooking.setWorker(assignedWorker);
+            savedBooking.setStatus(BookingStatus.WORKER_ASSIGNED);
+            savedBooking = bookingRepository.save(savedBooking);
+        } else {
+            // No worker available - keep status as PENDING
+            throw new Exception("No available workers found for this service");
+        }
+        
+        return convertToResponse(savedBooking);
+    }
+    
+    // Create a new booking (original method kept for backward compatibility)
     public BookingResponse createBooking(BookingRequest request, Long customerId) throws Exception {
         // Validate customer exists
         Optional<Users> customerOpt = usersRepository.findById(customerId);
@@ -146,6 +199,83 @@ public class BookingService {
     // Delete booking
     public void deleteBooking(Long bookingId) {
         bookingRepository.deleteById(bookingId);
+    }
+    
+    // Reject assigned worker (customer rejects)
+    public BookingResponse rejectAssignedWorker(Long bookingId, String rejectionReason) throws Exception {
+        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+        if (bookingOpt.isEmpty()) {
+            throw new Exception("Booking not found");
+        }
+        
+        Booking booking = bookingOpt.get();
+        
+        // Mark current assignment as rejected
+        workerAssignmentService.rejectAssignedWorker(bookingId, rejectionReason);
+        
+        // Try to assign next best worker
+        Users nextWorker = workerAssignmentService.assignBestWorker(booking, booking.getWork());
+        
+        if (nextWorker != null) {
+            booking.setWorker(nextWorker);
+            booking.setStatus(BookingStatus.WORKER_ASSIGNED);
+        } else {
+            // No more workers available
+            booking.setStatus(BookingStatus.CANCELLED);
+            throw new Exception("No more available workers for this service");
+        }
+        
+        Booking updatedBooking = bookingRepository.save(booking);
+        return convertToResponse(updatedBooking);
+    }
+    
+    // Accept worker assignment (worker accepts)
+    public BookingResponse acceptWorkerAssignment(Long bookingId, Long workerId) throws Exception {
+        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+        if (bookingOpt.isEmpty()) {
+            throw new Exception("Booking not found");
+        }
+        
+        Booking booking = bookingOpt.get();
+        
+        boolean accepted = workerAssignmentService.acceptWorkerAssignment(bookingId, workerId);
+        
+        if (accepted) {
+            booking.setStatus(BookingStatus.CONFIRMED);
+            Booking updatedBooking = bookingRepository.save(booking);
+            return convertToResponse(updatedBooking);
+        } else {
+            throw new Exception("Failed to accept worker assignment");
+        }
+    }
+    
+    // Reject worker assignment (worker rejects)
+    public BookingResponse rejectWorkerAssignment(Long bookingId, Long workerId, String rejectionReason) throws Exception {
+        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+        if (bookingOpt.isEmpty()) {
+            throw new Exception("Booking not found");
+        }
+        
+        Booking booking = bookingOpt.get();
+        
+        boolean rejected = workerAssignmentService.rejectWorkerAssignment(bookingId, workerId, rejectionReason);
+        
+        if (rejected) {
+            // Try to assign next best worker
+            Users nextWorker = workerAssignmentService.assignBestWorker(booking, booking.getWork());
+            
+            if (nextWorker != null) {
+                booking.setWorker(nextWorker);
+                booking.setStatus(BookingStatus.WORKER_ASSIGNED);
+            } else {
+                booking.setStatus(BookingStatus.CANCELLED);
+            }
+            
+            Booking updatedBooking = bookingRepository.save(booking);
+            return convertToResponse(updatedBooking);
+        } else {
+            throw new Exception("Failed to reject worker assignment");
+        }
     }
     
     // Convert Booking entity to BookingResponse DTO

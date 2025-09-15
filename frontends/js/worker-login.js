@@ -1,6 +1,6 @@
 // Worker Login JavaScript
-// Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+// Worker login functionality
+// Uses global API_BASE_URL from main.js
 
 document.addEventListener('DOMContentLoaded', function() {
     const workerLogin = new WorkerLogin();
@@ -364,12 +364,12 @@ class WorkerLogin {
             localStorage.setItem('authToken', response.jwt);
             localStorage.setItem('userRole', response.role);
             
-            this.showSuccessMessage(`Welcome back! Redirecting to your dashboard...`);
+            this.showSuccessMessage(`Welcome back! Redirecting to work dashboard...`);
             
-            // Redirect to worker dashboard
+            // Redirect to services page but workers will see it differently
             setTimeout(() => {
-                window.location.href = '../html/worker-dashboard.html'; // Update when dashboard is created
-                console.log('Redirecting to worker dashboard...');
+                window.location.href = 'services.html?view=worker';
+                console.log('Redirecting worker to work dashboard...');
             }, 1500);
         } else {
             this.showErrorMessage(response.message || 'Login failed. Please check your credentials.');
