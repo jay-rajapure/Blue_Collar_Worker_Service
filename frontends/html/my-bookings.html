@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Bookings - ServiceHub</title>
+    <title>My Bookings - WorkBuddy</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../css/main.css" rel="stylesheet">
@@ -53,15 +53,13 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div>
                                 <h2 class="fw-bold text-primary mb-1">
-                                    <i class="fas fa-calendar-alt me-2"></i>My Bookings
+                                    <i class="fas fa-calendar-alt me-2"></i><span id="pageTitle">My Bookings</span>
                                 </h2>
-                                <p class="text-muted mb-0">Manage your service bookings</p>
+                                <p class="text-muted mb-0" id="pageSubtitle">Manage your service bookings</p>
                             </div>
-                            <div>
-                                <button class="btn btn-primary" onclick="window.location.href='services.html'">
-                                    <i class="fas fa-plus me-2"></i>New Booking
-                                </button>
-                                <button class="btn btn-outline-secondary ms-2" onclick="refreshBookings()">
+                            <div id="headerActions">
+                                <!-- Actions will be populated based on user role -->
+                                <button class="btn btn-outline-secondary" onclick="refreshBookings()">
                                     <i class="fas fa-sync-alt me-2"></i>Refresh
                                 </button>
                             </div>
@@ -102,11 +100,11 @@
                         <!-- Empty State -->
                         <div id="emptyState" class="text-center py-5 d-none">
                             <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                            <h4 class="text-muted">No Bookings Found</h4>
-                            <p class="text-muted">You haven't made any bookings yet.</p>
-                            <button class="btn btn-primary" onclick="window.location.href='services.html'">
-                                <i class="fas fa-plus me-2"></i>Book Your First Service
-                            </button>
+                            <h4 class="text-muted" id="emptyStateTitle">No Bookings Found</h4>
+                            <p class="text-muted" id="emptyStateMessage">You haven't made any bookings yet.</p>
+                            <div id="emptyStateAction">
+                                <!-- Action button will be populated based on user role -->
+                            </div>
                         </div>
 
                         <!-- Bookings List -->

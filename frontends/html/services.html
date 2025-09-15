@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse Services - ServiceHub</title>
+    <title>Browse Services - WorkBuddy</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔨</text></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../css/main.css" rel="stylesheet">
@@ -26,10 +27,86 @@
             margin-bottom: 1rem;
             transition: all 0.3s ease;
             background: white;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         .service-item:hover {
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
             transform: translateY(-3px);
+            border-color: #667eea;
+        }
+        .service-header {
+            border-bottom: 1px solid #f8f9fa;
+            padding-bottom: 1rem;
+        }
+        .service-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            line-height: 1.3;
+        }
+        .worker-name {
+            font-weight: 500;
+        }
+        .price-section {
+            background: linear-gradient(135deg, #667eea 10%, #764ba2 90%);
+            border-radius: 12px;
+            padding: 1rem;
+            color: white;
+        }
+        .price-main {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .price-currency {
+            font-size: 1.2rem;
+        }
+        .price-amount {
+            font-size: 1.8rem;
+        }
+        .price-duration {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .availability-badge {
+            font-size: 0.75rem;
+        }
+        .service-description {
+            flex-grow: 1;
+        }
+        .detail-item {
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .rating-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 0.75rem;
+        }
+        .rating-stars {
+            font-size: 1.1rem;
+        }
+        .service-actions {
+            margin-top: auto;
+        }
+        .service-actions .btn {
+            border-radius: 10px;
+            font-weight: 500;
+            padding: 0.6rem 1rem;
+        }
+        .service-actions .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .service-actions .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6b4090 100%);
+            transform: translateY(-1px);
         }
         .worker-avatar {
             width: 60px;

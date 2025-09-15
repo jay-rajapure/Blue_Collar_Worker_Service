@@ -4,6 +4,7 @@ import com.byteminds.blue.colller.worker.service.Response.BookingResponse;
 import com.byteminds.blue.colller.worker.service.models.BookingStatus;
 import com.byteminds.blue.colller.worker.service.models.Users;
 import com.byteminds.blue.colller.worker.service.request.BookingRequest;
+import com.byteminds.blue.colller.worker.service.request.AutoBookingRequest;
 import com.byteminds.blue.colller.worker.service.service.BookingService;
 import com.byteminds.blue.colller.worker.service.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -24,9 +26,24 @@ public class BookingController {
     @Autowired
     private UsersService usersService;
     
-    // Create a new booking
+    // Create a new booking with auto-assignment
+    @PostMapping("/auto")
+    public ResponseEntity<?> createAutoBooking(
+            @RequestHeader("Authorization") String jwt,
+            @RequestBody AutoBookingRequest bookingRequest) {
+        try {
+            Users customer = usersService.findByJwtToken(jwt);
+            BookingResponse booking = bookingService.createAutoBooking(bookingRequest, customer.getId());
+            return new ResponseEntity<>(booking, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(java.util.Map.of("error", "Failed to create booking", "message", e.getMessage()));
+        }
+    }
+    
+    // Create a new booking (original method)
     @PostMapping
-    public ResponseEntity<BookingResponse> createBooking(
+    public ResponseEntity<?> createBooking(
             @RequestHeader("Authorization") String jwt,
             @RequestBody BookingRequest bookingRequest) {
         try {
@@ -34,7 +51,8 @@ public class BookingController {
             BookingResponse booking = bookingService.createBooking(bookingRequest, customer.getId());
             return new ResponseEntity<>(booking, HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(java.util.Map.of("error", "Failed to create booking", "message", e.getMessage()));
         }
     }
     
@@ -183,5 +201,63 @@ public class BookingController {
     public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    // Reject assigned worker (customer action)
+    @PutMapping("/{id}/reject-worker")
+    public ResponseEntity<BookingResponse> rejectAssignedWorker(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String jwt,
+            @RequestParam(required = false) String rejectionReason) {
+        try {
+            Users customer = usersService.findByJwtToken(jwt);
+            if (!"CUSTOMER".equals(customer.getRole().toString())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            
+            String reason = rejectionReason != null ? rejectionReason : "Customer requested different worker";
+            BookingResponse booking = bookingService.rejectAssignedWorker(id, reason);
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // Accept worker assignment (worker action)
+    @PutMapping("/{id}/accept-assignment")
+    public ResponseEntity<BookingResponse> acceptWorkerAssignment(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String jwt) {
+        try {
+            Users worker = usersService.findByJwtToken(jwt);
+            if (!"WORKER".equals(worker.getRole().toString())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            
+            BookingResponse booking = bookingService.acceptWorkerAssignment(id, worker.getId());
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // Reject worker assignment (worker action)
+    @PutMapping("/{id}/reject-assignment")
+    public ResponseEntity<BookingResponse> rejectWorkerAssignment(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String jwt,
+            @RequestParam(required = false) String rejectionReason) {
+        try {
+            Users worker = usersService.findByJwtToken(jwt);
+            if (!"WORKER".equals(worker.getRole().toString())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            
+            String reason = rejectionReason != null ? rejectionReason : "Worker unable to take this job";
+            BookingResponse booking = bookingService.rejectWorkerAssignment(id, worker.getId(), reason);
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

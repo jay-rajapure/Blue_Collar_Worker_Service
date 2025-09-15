@@ -1,8 +1,13 @@
 package com.byteminds.blue.colller.worker.service.Config;
 
+import com.byteminds.blue.colller.worker.service.service.CustomerUserDetailService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,21 +18,31 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig
 {
+    @Autowired
+    private CustomerUserDetailService customerUserDetailService;
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception
     {
         http.sessionManagement(management-> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(Authorize->Authorize
-                        .requestMatchers("/api/admin/**").hasAnyRole("WORKER","ADMIN")
-                        .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/auth/**").permitAll()  // Allow auth endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/worker/**").hasRole("WORKER")
+                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/common/**").authenticated()
                         .anyRequest().permitAll()
                 ).addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
+                .authenticationProvider(authenticationProvider())
                 .csrf(csrf->csrf.disable())
-                .cors(cors->cors.configurationSource(corsConfigrationSource()));
+                .cors(cors->cors.configurationSource(corsConfigrationSource()))
+                .httpBasic(httpBasic->httpBasic.disable())  // Disable basic auth
+                .formLogin(formLogin->formLogin.disable()); // Disable form login
 
         return http.build();
     }
@@ -39,7 +54,14 @@ public class SecurityConfig
             @Override
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request)
             {
-                return null;
+                CorsConfiguration cfg = new CorsConfiguration();
+                cfg.setAllowedOriginPatterns(Arrays.asList("*"));
+                cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                cfg.setAllowCredentials(true);
+                cfg.setAllowedHeaders(Arrays.asList("*"));
+                cfg.setExposedHeaders(Arrays.asList("Authorization"));
+                cfg.setMaxAge(3600L);
+                return cfg;
             }
         };
     }
@@ -47,6 +69,19 @@ public class SecurityConfig
     PasswordEncoder passwordEncoder()
     {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customerUserDetailService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
 }

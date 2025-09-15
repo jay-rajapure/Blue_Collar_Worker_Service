@@ -32,11 +32,26 @@ public class JwtProvider
     }
     public String getemailfromjwttoken(String jwt)
     {
-        jwt=jwt.substring(7);
+        // Remove "Bearer " prefix only if it exists
+        if (jwt.startsWith("Bearer ")) {
+            jwt = jwt.substring(7);
+        }
+        
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
-
         String email = String.valueOf(claims.get("email"));
         return email;
+    }
+    
+    public Long getUserIdFromJwtToken(String jwt) {
+        // Remove "Bearer " prefix only if it exists
+        if (jwt.startsWith("Bearer ")) {
+            jwt = jwt.substring(7);
+        }
+        
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
+        // For now, we'll get the user ID via email lookup
+        // In a future enhancement, we could add userId directly to the JWT claims
+        return null; // Will be handled by findByJwtToken method
     }
     private String populateAuthorities(Collection <? extends GrantedAuthority> authorities)
     {

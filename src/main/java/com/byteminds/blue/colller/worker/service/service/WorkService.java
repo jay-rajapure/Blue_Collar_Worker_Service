@@ -86,5 +86,35 @@ public class WorkService {
         post.setAvailable(isAvailable);
         return workPostRepository.save(post);
     }
+
+    /**
+     * Get available works for customers to browse and book.
+     */
+    public List<Work> getAvailableWorksForCustomers() {
+        try {
+            System.out.println("Fetching available works from repository...");
+            List<Work> works = workPostRepository.findByIsAvailableTrue();
+            System.out.println("Successfully fetched " + works.size() + " works");
+            return works;
+        } catch (Exception e) {
+            System.err.println("Error fetching available works: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch available works", e);
+        }
+    }
+
+    /**
+     * Get works posted by a specific worker.
+     */
+    public List<Work> getWorksByWorkerId(Long workerId) {
+        return workPostRepository.findByWorker_Id(workerId);
+    }
+
+    /**
+     * Get work opportunities for a worker (available works from other workers).
+     */
+    public List<Work> getWorkOpportunitiesForWorker(Long workerId) {
+        return workPostRepository.findByIsAvailableTrueAndWorker_IdNot(workerId);
+    }
 }
 

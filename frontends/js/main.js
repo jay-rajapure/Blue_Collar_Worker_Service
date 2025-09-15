@@ -124,6 +124,10 @@ class ServiceHub {
         // Basic form validation setup
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
+            // Skip forms that have specific handlers (like registration forms)
+            if (form.id === 'customerRegisterForm' || form.id === 'workerRegisterForm' || form.id === 'registrationForm' || form.classList.contains('has-custom-handler')) {
+                return;
+            }
             form.addEventListener('submit', this.handleFormSubmit.bind(this));
             
             // Real-time validation

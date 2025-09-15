@@ -1,6 +1,6 @@
 // Booking JavaScript
-// Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+// Booking functionality
+// Uses global API_BASE_URL from main.js
 
 document.addEventListener('DOMContentLoaded', function() {
     const booking = new BookingSystem();
@@ -57,6 +57,9 @@ class BookingSystem {
         if (locationBtn) {
             locationBtn.addEventListener('click', this.useCurrentLocation.bind(this));
         }
+
+        // Payment method change handlers
+        this.setupPaymentMethodHandlers();
     }
 
     setupDateTimeValidation() {
@@ -80,6 +83,31 @@ class BookingSystem {
         }
     }
 
+    setupPaymentMethodHandlers() {
+        const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+        const upiDetails = document.getElementById('upiPaymentDetails');
+        const cardDetails = document.getElementById('cardPaymentDetails');
+
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', (e) => {
+                const selectedMethod = e.target.value;
+                
+                // Hide all payment details first
+                if (upiDetails) upiDetails.style.display = 'none';
+                if (cardDetails) cardDetails.style.display = 'none';
+                
+                // Show relevant payment details
+                if (selectedMethod === 'UPI' && upiDetails) {
+                    upiDetails.style.display = 'block';
+                } else if (selectedMethod === 'CARD' && cardDetails) {
+                    cardDetails.style.display = 'block';
+                }
+                
+                this.updateSummary();
+            });
+        });
+    }
+
     setupLocationServices() {
         // Auto-fill address if user location is available
         const savedLocation = localStorage.getItem('userLocation');
@@ -93,18 +121,17 @@ class BookingSystem {
     }
 
     loadServiceDetails() {
-        // Get service and worker IDs from URL parameters
+        // Get service ID from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const workId = urlParams.get('workId');
-        const workerId = urlParams.get('workerId');
 
-        if (!workId || !workerId) {
-            this.showError('Invalid service or worker selection. Please go back and select a service.');
+        if (!workId) {
+            this.showError('Invalid service selection. Please go back and select a service.');
             return;
         }
 
         this.loadWorkDetails(workId);
-        this.loadWorkerDetails(workerId);
+        // No need to load specific worker - system will auto-assign
     }
 
     async loadWorkDetails(workId) {
@@ -138,10 +165,10 @@ class BookingSystem {
     }
 
     displayServiceInfo() {
-        if (!this.currentService || !this.currentWorker) return;
+        if (!this.currentService) return;
 
         document.getElementById('serviceName').textContent = this.currentService.title;
-        document.getElementById('workerName').textContent = `Worker: ${this.currentWorker.name}`;
+        document.getElementById('workerName').textContent = 'Worker: Auto-assigned (Best Available)';
         document.getElementById('serviceDescription').textContent = 
             `Description: ${this.currentService.description}`;
         document.getElementById('servicePrice').textContent = `₹${this.currentService.charges}`;
@@ -152,11 +179,11 @@ class BookingSystem {
     }
 
     updateSummary() {
-        if (!this.currentService || !this.currentWorker) return;
+        if (!this.currentService) return;
 
         // Update summary fields
         document.getElementById('summaryService').textContent = this.currentService.title;
-        document.getElementById('summaryWorker').textContent = this.currentWorker.name;
+        document.getElementById('summaryWorker').textContent = 'Auto-assigned (Best Available)';
         
         const date = document.getElementById('serviceDate').value;
         const time = document.getElementById('serviceTime').value;
@@ -171,6 +198,26 @@ class BookingSystem {
         if (isEmergency) {
             total *= 1.5; // 50% emergency surcharge
         }
+        
+        // Get selected payment method
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        const paymentMethod = selectedPaymentMethod ? selectedPaymentMethod.value : 'UPI';
+        
+        // Update summary with payment method
+        const existingPaymentInfo = document.getElementById('summaryPaymentMethod');
+        if (!existingPaymentInfo) {
+            const summaryContainer = document.querySelector('.booking-summary .row');
+            const paymentDiv = document.createElement('div');
+            paymentDiv.className = 'col-6';
+            paymentDiv.innerHTML = `
+                <small>Payment Method:</small>
+                <div class="fw-semibold" id="summaryPaymentMethod">${this.getPaymentMethodDisplay(paymentMethod)}</div>
+            `;
+            summaryContainer.appendChild(paymentDiv);
+        } else {
+            existingPaymentInfo.textContent = this.getPaymentMethodDisplay(paymentMethod);
+        }
+        
         document.getElementById('summaryTotal').textContent = `₹${total.toFixed(2)}`;
     }
 
@@ -357,12 +404,12 @@ class BookingSystem {
             return;
         }
 
-        const submitBtn = this.form.querySelector('button[type=\"submit\"]');
+        const submitBtn = this.form.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         
         submitBtn.classList.add('loading');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class=\"fas fa-spinner fa-spin me-2\"></i>Creating Booking...';
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Booking...';
 
         try {
             const bookingData = this.getBookingData();
@@ -371,8 +418,22 @@ class BookingSystem {
             if (!authToken) {
                 throw new Error('Please login to make a booking');
             }
+            
+            // Handle payment if UPI is selected
+            if (bookingData.paymentMethod === 'UPI' && bookingData.paymentDetails.upiId) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing Payment...';
+                
+                const totalAmount = this.calculateTotalAmount();
+                const paymentResult = await this.processUPIPayment(bookingData, totalAmount);
+                
+                // Add payment info to booking data
+                bookingData.paymentId = paymentResult.paymentId;
+                bookingData.paymentStatus = paymentResult.status;
+            }
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Confirming Booking...';
 
-            const response = await fetch(`${API_BASE_URL}/api/bookings`, {
+            const response = await fetch(`${API_BASE_URL}/api/bookings/auto`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -383,12 +444,7 @@ class BookingSystem {
 
             if (response.ok) {
                 const result = await response.json();
-                this.showSuccess('Booking created successfully!');
-                
-                // Redirect to bookings page after delay
-                setTimeout(() => {
-                    window.location.href = 'my-bookings.html';
-                }, 2000);
+                this.showBookingSuccess(result);
             } else {
                 const error = await response.json();
                 throw new Error(error.message || 'Failed to create booking');
@@ -411,14 +467,24 @@ class BookingSystem {
         // Combine date and time
         const scheduledDate = new Date(`${date}T${time}`);
         
+        // Get payment method details
+        const paymentMethod = formData.get('paymentMethod') || 'UPI';
+        const paymentData = {
+            method: paymentMethod,
+            upiId: formData.get('upiId'),
+            upiApp: formData.get('upiApp')
+        };
+        
         return {
             workId: this.currentService.id,
-            workerId: this.currentWorker.id,
+            // No workerId needed - system will auto-assign
             description: formData.get('description'),
             scheduledDate: scheduledDate.toISOString(),
             customerAddress: formData.get('address'),
             customerPhone: formData.get('phone'),
-            specialInstructions: formData.get('specialInstructions')
+            specialInstructions: formData.get('specialInstructions'),
+            paymentMethod: paymentMethod,
+            paymentDetails: paymentData
         };
     }
 
@@ -431,6 +497,20 @@ class BookingSystem {
                 isValid = false;
             }
         });
+
+        // Validate payment method
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        if (!selectedPaymentMethod) {
+            this.showError('Please select a payment method');
+            isValid = false;
+        } else if (selectedPaymentMethod.value === 'UPI') {
+            // Validate UPI ID if UPI is selected
+            const upiId = document.getElementById('upiId').value.trim();
+            if (upiId && !this.validateUPIId(upiId)) {
+                this.showFieldError(document.getElementById('upiId'), 'Please enter a valid UPI ID (e.g., name@paytm)');
+                isValid = false;
+            }
+        }
 
         // Check terms agreement
         const agreeTerms = document.getElementById('agreeTerms');
@@ -494,5 +574,517 @@ class BookingSystem {
                 alertElement.remove();
             }
         }, 5000);
+    }
+
+    showBookingSuccess(bookingResult) {
+        // Hide the form and show success message
+        this.form.style.display = 'none';
+        
+        // Create success confirmation view
+        const successContainer = document.createElement('div');
+        successContainer.className = 'booking-success-container text-center';
+        successContainer.innerHTML = `
+            <div class="success-animation mb-4">
+                <div class="success-checkmark">
+                    <div class="check-icon">
+                        <span class="icon-line line-tip"></span>
+                        <span class="icon-line line-long"></span>
+                        <div class="icon-circle"></div>
+                        <div class="icon-fix"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <h2 class="text-success fw-bold mb-3">
+                <i class="fas fa-check-circle me-2"></i>Booking Confirmed!
+            </h2>
+            
+            <p class="lead text-muted mb-4">
+                Your service has been successfully booked. We've sent confirmation details to your email and phone.
+            </p>
+            
+            <div class="booking-confirmation-card">
+                <div class="card border-success mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-receipt me-2"></i>Booking Confirmation
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <strong>Booking ID:</strong><br>
+                                <span class="text-primary">#${bookingResult.id || 'BK' + Date.now()}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Status:</strong><br>
+                                <span class="badge bg-warning">Pending Confirmation</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Service:</strong><br>
+                                ${this.currentService.title}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Worker:</strong><br>
+                                ${bookingResult.workerName || 'Auto-assigned'}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Scheduled Date:</strong><br>
+                                ${this.getFormattedDateTime()}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Total Amount:</strong><br>
+                                <span class="h5 text-success">₹${this.calculateTotal()}</span>
+                            </div>
+                            <div class="col-12">
+                                <strong>Service Address:</strong><br>
+                                ${document.getElementById('address').value}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="next-steps-card mb-4">
+                <div class="card border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-list-check me-2"></i>What Happens Next?
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 text-start">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="step-number">1</div>
+                                    <div>
+                                        <strong>Worker Review</strong><br>
+                                        <small class="text-muted">The worker will review your booking request within 2-4 hours</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="step-number">2</div>
+                                    <div>
+                                        <strong>Confirmation</strong><br>
+                                        <small class="text-muted">You'll receive SMS/Email confirmation once accepted</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="step-number">3</div>
+                                    <div>
+                                        <strong>Service Day</strong><br>
+                                        <small class="text-muted">Worker will arrive at scheduled time</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="step-number">4</div>
+                                    <div>
+                                        <strong>Payment</strong><br>
+                                        <small class="text-muted">Pay securely after service completion</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="contact-info mb-4">
+                <div class="alert alert-light border">
+                    <h6 class="mb-2">
+                        <i class="fas fa-phone me-2"></i>Need Help?
+                    </h6>
+                    <p class="mb-1">Contact our support team at <strong>+91 98765 43210</strong></p>
+                    <p class="mb-0">Email: <strong>support@workbuddy.com</strong></p>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary btn-lg me-3" onclick="window.location.href='my-bookings.html'">
+                    <i class="fas fa-calendar-alt me-2"></i>View My Bookings
+                </button>
+                <button class="btn btn-outline-secondary btn-lg me-3" onclick="window.location.href='services.html'">
+                    <i class="fas fa-plus me-2"></i>Book Another Service
+                </button>
+                <button class="btn btn-outline-info btn-lg" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i>Print Confirmation
+                </button>
+            </div>
+        `;
+        
+        // Add success styles
+        const successStyles = document.createElement('style');
+        successStyles.textContent = `
+            .booking-success-container {
+                animation: fadeInUp 0.6s ease-out;
+            }
+            
+            .success-checkmark {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                display: block;
+                stroke-width: 3;
+                stroke: #4CAF50;
+                stroke-miterlimit: 10;
+                margin: 10px auto;
+                box-shadow: inset 0px 0px 0px #4CAF50;
+                animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+                position: relative;
+            }
+            
+            .success-checkmark .check-icon {
+                width: 80px;
+                height: 80px;
+                position: relative;
+                border-radius: 50%;
+                box-sizing: border-box;
+                border: 3px solid #4CAF50;
+            }
+            
+            .success-checkmark .check-icon::before {
+                top: 3px;
+                left: -2px;
+                width: 30px;
+                transform-origin: 100% 50%;
+                border-radius: 100px 0 0 100px;
+            }
+            
+            .success-checkmark .check-icon::after {
+                top: 0;
+                left: 30px;
+                width: 60px;
+                transform-origin: 0 50%;
+                border-radius: 0 100px 100px 0;
+                animation: rotate-circle 4.25s ease-in;
+            }
+            
+            .success-checkmark .check-icon::before, 
+            .success-checkmark .check-icon::after {
+                content: '';
+                height: 100px;
+                position: absolute;
+                background: #FFFFFF;
+                transform: rotate(-45deg);
+            }
+            
+            .success-checkmark .icon-line {
+                height: 3px;
+                background-color: #4CAF50;
+                display: block;
+                border-radius: 2px;
+                position: absolute;
+                z-index: 10;
+            }
+            
+            .success-checkmark .icon-line.line-tip {
+                top: 46px;
+                left: 14px;
+                width: 25px;
+                transform: rotate(45deg);
+                animation: icon-line-tip 0.75s;
+            }
+            
+            .success-checkmark .icon-line.line-long {
+                top: 38px;
+                right: 8px;
+                width: 47px;
+                transform: rotate(-45deg);
+                animation: icon-line-long 0.75s;
+            }
+            
+            .success-checkmark .icon-circle {
+                top: -3px;
+                left: -3px;
+                z-index: 10;
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                position: absolute;
+                box-sizing: content-box;
+                border: 3px solid #4CAF50;
+            }
+            
+            .success-checkmark .icon-fix {
+                top: 8px;
+                width: 5px;
+                left: 26px;
+                z-index: 1;
+                height: 85px;
+                position: absolute;
+                transform: rotate(-45deg);
+                background-color: #FFFFFF;
+            }
+            
+            .step-number {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background: #007bff;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                margin-right: 15px;
+                flex-shrink: 0;
+            }
+            
+            @keyframes icon-line-tip {
+                0% { width: 0; left: 1px; top: 19px; }
+                54% { width: 0; left: 1px; top: 19px; }
+                70% { width: 50px; left: -8px; top: 37px; }
+                84% { width: 17px; left: 21px; top: 48px; }
+                100% { width: 25px; left: 14px; top: 46px; }
+            }
+            
+            @keyframes icon-line-long {
+                0% { width: 0; right: 46px; top: 54px; }
+                65% { width: 0; right: 46px; top: 54px; }
+                84% { width: 55px; right: 0px; top: 35px; }
+                100% { width: 47px; right: 8px; top: 38px; }
+            }
+            
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translate3d(0, 40px, 0);
+                }
+                to {
+                    opacity: 1;
+                    transform: translate3d(0, 0, 0);
+                }
+            }
+        `;
+        
+        document.head.appendChild(successStyles);
+        
+        // Replace form with success message
+        this.form.parentNode.appendChild(successContainer);
+        
+        // Simulate sending confirmation notifications
+        this.simulateNotifications();
+        
+        // Scroll to top to show the success message
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    getFormattedDateTime() {
+        const date = document.getElementById('serviceDate').value;
+        const time = document.getElementById('serviceTime').value;
+        if (date && time) {
+            const formattedDate = new Date(date).toLocaleDateString('en-IN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const formattedTime = new Date(`2000-01-01T${time}`).toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+            return `${formattedDate} at ${formattedTime}`;
+        }
+        return 'Not specified';
+    }
+    
+    calculateTotal() {
+        if (!this.currentService) return '0.00';
+        
+        let total = this.currentService.charges;
+        const isEmergency = document.getElementById('isEmergency').checked;
+        if (isEmergency) {
+            total *= 1.5; // 50% emergency surcharge
+        }
+        return total.toFixed(2);
+    }
+    
+    calculateTotalAmount() {
+        if (!this.currentService) return 0;
+        
+        let total = this.currentService.charges;
+        const isEmergency = document.getElementById('isEmergency').checked;
+        if (isEmergency) {
+            total *= 1.5; // 50% emergency surcharge
+        }
+        return total;
+    }
+    
+    simulateNotifications() {
+        // Simulate email notification
+        setTimeout(() => {
+            this.showNotificationToast('📧', 'Confirmation email sent!', 'success');
+        }, 1000);
+        
+        // Simulate SMS notification
+        setTimeout(() => {
+            this.showNotificationToast('📱', 'SMS confirmation sent to your phone!', 'info');
+        }, 2000);
+        
+        // Simulate worker notification
+        setTimeout(() => {
+            this.showNotificationToast('👷', 'Worker has been notified of your booking', 'primary');
+        }, 3000);
+    }
+    
+    showNotificationToast(icon, message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; animation: slideInRight 0.3s ease-out;';
+        toast.innerHTML = `
+            <span style="font-size: 1.2em; margin-right: 8px;">${icon}</span>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto-dismiss after 4 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 4000);
+        
+        // Add slide animations
+        if (!document.getElementById('toast-animations')) {
+            const toastStyles = document.createElement('style');
+            toastStyles.id = 'toast-animations';
+            toastStyles.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOutRight {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(toastStyles);
+        }
+    }
+    
+    getPaymentMethodDisplay(method) {
+        switch(method) {
+            case 'UPI': return 'UPI Payment';
+            case 'CARD': return 'Card Payment';
+            case 'CASH': return 'Cash on Service';
+            default: return method;
+        }
+    }
+    
+    validateUPIId(upiId) {
+        // Basic UPI ID validation pattern: username@provider
+        const upiPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z]+$/;
+        return upiPattern.test(upiId);
+    }
+    
+    async processUPIPayment(bookingData, totalAmount) {
+        const upiId = bookingData.paymentDetails.upiId;
+        const upiApp = bookingData.paymentDetails.upiApp;
+        
+        if (!upiId) {
+            throw new Error('UPI ID is required for UPI payment');
+        }
+        
+        // Generate UPI payment link
+        const paymentData = {
+            payeeName: 'WorkBuddy',
+            payeeVPA: 'workbuddy@paytm', // Your business UPI ID
+            amount: totalAmount,
+            transactionNote: `Booking #${Date.now()}`,
+            transactionRef: `WB${Date.now()}`
+        };
+        
+        // Create UPI payment URL
+        const upiUrl = this.generateUPIUrl(paymentData);
+        
+        // Show UPI payment modal
+        this.showUPIPaymentModal(upiUrl, paymentData);
+        
+        return new Promise((resolve, reject) => {
+            // This would typically integrate with a payment gateway
+            // For demo purposes, we'll simulate payment confirmation
+            setTimeout(() => {
+                const confirmed = confirm('Payment initiated. Have you completed the payment?');
+                if (confirmed) {
+                    resolve({
+                        paymentId: `UPI_${Date.now()}`,
+                        status: 'SUCCESS',
+                        amount: totalAmount,
+                        method: 'UPI'
+                    });
+                } else {
+                    reject(new Error('Payment cancelled by user'));
+                }
+            }, 2000);
+        });
+    }
+    
+    generateUPIUrl(paymentData) {
+        const params = new URLSearchParams({
+            pa: paymentData.payeeVPA,
+            pn: paymentData.payeeName,
+            am: paymentData.amount,
+            tn: paymentData.transactionNote,
+            tr: paymentData.transactionRef
+        });
+        
+        return `upi://pay?${params.toString()}`;
+    }
+    
+    showUPIPaymentModal(upiUrl, paymentData) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade show';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fab fa-google-pay me-2"></i>UPI Payment
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-4">
+                            <i class="fab fa-google-pay text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h6>Complete Payment of ₹${paymentData.amount}</h6>
+                        <p class="text-muted">Scan QR code or click the button below to pay via UPI</p>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="${upiUrl}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-mobile-alt me-2"></i>Pay with UPI App
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary" onclick="this.closest('.modal').remove()">
+                                Cancel Payment
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>Click the "Pay with UPI App" button to open your UPI app and complete the payment.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Auto-remove modal after 30 seconds
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.remove();
+            }
+        }, 30000);
     }
 }

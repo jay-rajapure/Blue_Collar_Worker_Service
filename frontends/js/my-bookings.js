@@ -1,6 +1,6 @@
 // My Bookings JavaScript
-// Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+// My bookings functionality
+// Uses global API_BASE_URL from main.js
 
 document.addEventListener('DOMContentLoaded', function() {
     const myBookings = new MyBookingsManager();
@@ -154,6 +154,21 @@ class MyBookingsManager {
                 return `
                     <button class="btn btn-outline-danger btn-sm" onclick="cancelBooking(${booking.id})">
                         <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                `;
+            case 'WORKER_ASSIGNED':
+                return `
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewWorkerAssignment(${booking.id})">
+                        <i class="fas fa-user-check me-1"></i>View Assigned Worker
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="cancelBooking(${booking.id})">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                `;
+            case 'WORKER_REJECTED':
+                return `
+                    <button class="btn btn-outline-info btn-sm" disabled>
+                        <i class="fas fa-clock me-1"></i>Finding New Worker...
                     </button>
                 `;
             case 'CONFIRMED':
@@ -440,6 +455,10 @@ window.viewBookingDetails = function(bookingId) {
     if (window.myBookingsManager) {
         window.myBookingsManager.viewBookingDetails(bookingId);
     }
+};
+
+window.viewWorkerAssignment = function(bookingId) {
+    window.location.href = `worker-assignment.html?bookingId=${bookingId}`;
 };
 
 window.cancelBooking = function(bookingId) {

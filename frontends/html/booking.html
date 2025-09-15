@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Service - ServiceHub</title>
+    <title>Book Service - WorkBuddy</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔨</text></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../css/main.css" rel="stylesheet">
@@ -39,12 +40,11 @@
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <div class="booking-card">
-                        <!-- Header -->
                         <div class="text-center mb-4">
                             <h2 class="fw-bold text-primary">
                                 <i class="fas fa-calendar-check me-2"></i>Book Service
                             </h2>
-                            <p class="text-muted">Schedule your service appointment</p>
+                            <p class="text-muted">Schedule your service appointment with WorkBuddy</p>
                         </div>
 
                         <!-- Service Information -->
@@ -132,6 +132,90 @@
                                               placeholder="Any special requirements or instructions..."></textarea>
                                 </div>
 
+                                <!-- Payment Method -->  
+                                <div class="col-12">
+                                    <label class="form-label">
+                                        <i class="fas fa-credit-card me-2"></i>Payment Method *
+                                    </label>
+                                    <div class="payment-methods">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="paymentUPI" value="UPI" checked>
+                                            <label class="form-check-label d-flex align-items-center" for="paymentUPI">
+                                                <i class="fab fa-google-pay text-primary me-2"></i>
+                                                <span>UPI Payment (Google Pay, PhonePe, Paytm)</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCard" value="CARD">
+                                            <label class="form-check-label d-flex align-items-center" for="paymentCard">
+                                                <i class="fas fa-credit-card text-success me-2"></i>
+                                                <span>Credit/Debit Card</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCash" value="CASH">
+                                            <label class="form-check-label d-flex align-items-center" for="paymentCash">
+                                                <i class="fas fa-money-bill text-warning me-2"></i>
+                                                <span>Cash on Service</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- UPI Payment Details (shown when UPI is selected) -->
+                                <div class="col-12" id="upiPaymentDetails">
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0">
+                                                <i class="fab fa-google-pay me-2"></i>UPI Payment Details
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="upiId" class="form-label">UPI ID</label>
+                                                    <input type="text" class="form-control" id="upiId" name="upiId" 
+                                                           placeholder="yourname@paytm">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="upiApp" class="form-label">Preferred UPI App</label>
+                                                    <select class="form-select" id="upiApp" name="upiApp">
+                                                        <option value="gpay">Google Pay</option>
+                                                        <option value="phonepe">PhonePe</option>
+                                                        <option value="paytm">Paytm</option>
+                                                        <option value="bhim">BHIM UPI</option>
+                                                        <option value="other">Other UPI App</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="alert alert-info">
+                                                        <i class="fas fa-info-circle me-2"></i>
+                                                        <strong>Secure Payment:</strong> Payment will be processed after service confirmation. 
+                                                        You'll receive a UPI payment request on your registered mobile number.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card Payment Details (hidden by default) -->
+                                <div class="col-12" id="cardPaymentDetails" style="display: none;">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-credit-card me-2"></i>Card Payment Details
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-shield-alt me-2"></i>
+                                                <strong>Coming Soon:</strong> Card payment integration will be available soon. 
+                                                Please use UPI or Cash payment for now.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <!-- Terms and Conditions -->
                                 <div class="col-12">
                                     <div class="form-check">

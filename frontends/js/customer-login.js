@@ -1,6 +1,6 @@
 // Customer Login JavaScript
-// Backend API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+// Customer login functionality
+// Uses global API_BASE_URL from main.js
 
 document.addEventListener('DOMContentLoaded', function() {
     const customerLogin = new CustomerLogin();
@@ -263,16 +263,25 @@ class CustomerLogin {
 
     handleLoginResponse(response) {
         if (response.jwt && response.message === 'Login Success') {
-            // Store user data and token
+            // Store enhanced user data and token
             localStorage.setItem('authToken', response.jwt);
             localStorage.setItem('userRole', response.role);
             
-            this.showSuccessMessage('Login successful! Redirecting to dashboard...');
+            // Store additional user information if available
+            if (response.userId) localStorage.setItem('userId', response.userId);
+            if (response.userName) localStorage.setItem('userName', response.userName);
+            if (response.userEmail) localStorage.setItem('userEmail', response.userEmail);
             
-            // Redirect to customer dashboard
+            // Show custom welcome message if available
+            const welcomeMessage = response.welcomeMessage || 'Login successful! Redirecting to browse services...';
+            this.showSuccessMessage(welcomeMessage);
+            
+            // Use dashboard URL from response or fallback to customer dashboard
+            const redirectUrl = response.dashboardUrl || 'customer-dashboard.html';
+            
             setTimeout(() => {
-                window.location.href = '../html/customer-dashboard.html'; // Update when dashboard is created
-                console.log('Redirecting to customer dashboard...');
+                window.location.href = redirectUrl;
+                console.log('Redirecting customer to:', redirectUrl);
             }, 1500);
         } else {
             this.showErrorMessage(response.message || 'Login failed. Please check your credentials.');

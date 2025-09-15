@@ -1,10 +1,12 @@
 package com.byteminds.blue.colller.worker.service.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "work")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Work {
 
     @Id
@@ -34,8 +36,9 @@ public class Work {
     @Basic(fetch = FetchType.LAZY) // Lazy load so it doesn’t slow normal queries
     private byte[] image;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "passwordHash"})
     private Users worker;
 
     // Getters and setters...

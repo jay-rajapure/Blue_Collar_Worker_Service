@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Service - ServiceHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
+    <style>
+        .add-service-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .service-form-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        .section-header {
+            border-bottom: 2px solid #667eea;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+        }
+        .image-upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .image-upload-area:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+        .price-input-group {
+            position: relative;
+        }
+        .price-input-group .form-control {
+            padding-left: 2.5rem;
+        }
+        .price-currency {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .form-floating-custom {
+            position: relative;
+        }
+        .char-counter {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-tools me-2"></i>ServiceHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="services.html?view=worker">My Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my-bookings.html">My Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="add-service-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="service-form-card">
+                        <!-- Header -->
+                        <div class="text-center mb-4">
+                            <h2 class="fw-bold text-primary">
+                                <i class="fas fa-plus-circle me-2"></i>Add New Service
+                            </h2>
+                            <p class="text-muted">Create a service listing to attract customers</p>
+                        </div>
+
+                        <!-- Service Form -->
+                        <form id="addServiceForm" enctype="multipart/form-data">
+                            <!-- Basic Information -->
+                            <div class="section-header">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>Service Information
+                                </h5>
+                            </div>
+
+                            <div class="row">
+                                <!-- Service Title -->
+                                <div class="col-md-8 mb-3">
+                                    <label for="serviceTitle" class="form-label">Service Title *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="serviceTitle" 
+                                           name="title"
+                                           placeholder="e.g., Professional Plumbing Repair Services"
+                                           maxlength="100"
+                                           required>
+                                    <div class="form-text">Make it descriptive and professional</div>
+                                </div>
+
+                                <!-- Category -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="serviceCategory" class="form-label">Category *</label>
+                                    <select class="form-select" id="serviceCategory" name="category" required>
+                                        <option value="">Select Category</option>
+                                        <option value="plumbing">Plumbing</option>
+                                        <option value="electrical">Electrical</option>
+                                        <option value="carpentry">Carpentry</option>
+                                        <option value="painting">Painting</option>
+                                        <option value="cleaning">Cleaning</option>
+                                        <option value="gardening">Gardening</option>
+                                        <option value="appliance-repair">Appliance Repair</option>
+                                        <option value="hvac">HVAC</option>
+                                        <option value="masonry">Masonry</option>
+                                        <option value="roofing">Roofing</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Service Description -->
+                            <div class="mb-4">
+                                <label for="serviceDescription" class="form-label">Service Description *</label>
+                                <div class="form-floating-custom">
+                                    <textarea class="form-control" 
+                                              id="serviceDescription" 
+                                              name="description"
+                                              rows="4" 
+                                              maxlength="1000"
+                                              placeholder="Describe your service in detail. Include what's included, your experience, and what makes you unique..."
+                                              required></textarea>
+                                    <div class="char-counter">
+                                        <span id="descriptionCounter">0</span>/1000
+                                    </div>
+                                </div>
+                                <div class="form-text">Detailed descriptions help customers understand your services better</div>
+                            </div>
+
+                            <!-- Pricing & Duration -->
+                            <div class="section-header">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fas fa-rupee-sign me-2"></i>Pricing & Duration
+                                </h5>
+                            </div>
+
+                            <div class="row">
+                                <!-- Service Charges -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="serviceCharges" class="form-label">Service Charges (₹) *</label>
+                                    <div class="price-input-group">
+                                        <span class="price-currency">₹</span>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="serviceCharges" 
+                                               name="charges"
+                                               min="50" 
+                                               max="100000"
+                                               step="10"
+                                               placeholder="500"
+                                               required>
+                                    </div>
+                                    <div class="form-text">Your base service charge</div>
+                                </div>
+
+                                <!-- Estimated Time -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="estimatedTime" class="form-label">Estimated Duration (Hours) *</label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="estimatedTime" 
+                                           name="estimatedTimeHours"
+                                           min="0.5" 
+                                           max="24"
+                                           step="0.5"
+                                           placeholder="2.0"
+                                           required>
+                                    <div class="form-text">Typical time needed to complete</div>
+                                </div>
+                            </div>
+
+                            <!-- Location Settings -->
+                            <div class="section-header">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Service Location
+                                </h5>
+                            </div>
+
+                            <div class="row">
+                                <!-- Location Options -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Service Location Type</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="locationType" id="onSite" value="onSite" checked>
+                                        <label class="form-check-label" for="onSite">
+                                            <i class="fas fa-home me-2"></i>On-site (Customer's location)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="locationType" id="fixedLocation" value="fixed">
+                                        <label class="form-check-label" for="fixedLocation">
+                                            <i class="fas fa-map-pin me-2"></i>Fixed location (My workshop/office)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Get Current Location -->
+                                <div class="col-md-6 mb-3" id="locationSection" style="display: none;">
+                                    <label class="form-label">Workshop/Office Location</label>
+                                    <button type="button" class="btn btn-outline-primary w-100" id="getLocationBtn">
+                                        <i class="fas fa-crosshairs me-2"></i>Get Current Location
+                                    </button>
+                                    <div id="locationDisplay" class="mt-2 p-2 bg-light rounded" style="display: none;">
+                                        <small class="text-muted">Location: <span id="locationText"></span></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Service Image -->
+                            <div class="section-header">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fas fa-camera me-2"></i>Service Image (Optional)
+                                </h5>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="image-upload-area" onclick="document.getElementById('serviceImage').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <h6>Click to upload service image</h6>
+                                    <p class="text-muted mb-0">JPG, PNG or JPEG (Max 5MB)</p>
+                                    <input type="file" 
+                                           id="serviceImage" 
+                                           name="image"
+                                           accept="image/*" 
+                                           style="display: none;">
+                                </div>
+                                <div id="imagePreview" style="display: none;">
+                                    <img id="previewImg" class="image-preview" alt="Service preview">
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removeImage()">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Availability -->
+                            <div class="section-header">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fas fa-calendar-check me-2"></i>Availability
+                                </h5>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="isAvailable" name="isAvailable" checked>
+                                        <label class="form-check-label" for="isAvailable">
+                                            <strong>Service is currently available</strong>
+                                        </label>
+                                    </div>
+                                    <div class="form-text">You can change this later from your services dashboard</div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-check-circle me-2"></i>Create Service
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-outline-secondary btn-lg w-100" onclick="window.history.back()">
+                                        <i class="fas fa-arrow-left me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/add-service.js"></script>
+</body>
+</html>
