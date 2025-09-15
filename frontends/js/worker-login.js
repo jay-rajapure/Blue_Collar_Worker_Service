@@ -360,16 +360,25 @@ class WorkerLogin {
 
     handleLoginResponse(response) {
         if (response.jwt && response.message === 'Login Success') {
-            // Store user data and token
+            // Store enhanced user data and token
             localStorage.setItem('authToken', response.jwt);
             localStorage.setItem('userRole', response.role);
             
-            this.showSuccessMessage(`Welcome back! Redirecting to work dashboard...`);
+            // Store additional user information if available
+            if (response.userId) localStorage.setItem('userId', response.userId);
+            if (response.userName) localStorage.setItem('userName', response.userName);
+            if (response.userEmail) localStorage.setItem('userEmail', response.userEmail);
             
-            // Redirect to services page but workers will see it differently
+            // Show custom welcome message if available
+            const welcomeMessage = response.welcomeMessage || 'Welcome back! Redirecting to your dashboard...';
+            this.showSuccessMessage(welcomeMessage);
+            
+            // Use dashboard URL from response or fallback to worker dashboard
+            const redirectUrl = response.dashboardUrl || 'worker-dashboard.html';
+            
             setTimeout(() => {
-                window.location.href = 'services.html?view=worker';
-                console.log('Redirecting worker to work dashboard...');
+                window.location.href = redirectUrl;
+                console.log('Redirecting worker to dashboard:', redirectUrl);
             }, 1500);
         } else {
             this.showErrorMessage(response.message || 'Login failed. Please check your credentials.');

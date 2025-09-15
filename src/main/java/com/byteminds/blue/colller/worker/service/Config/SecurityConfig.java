@@ -32,8 +32,10 @@ public class SecurityConfig
         http.sessionManagement(management-> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(Authorize->Authorize
                         .requestMatchers("/auth/**").permitAll()  // Allow auth endpoints
-                        .requestMatchers("/api/admin/**").hasAnyRole("WORKER","ADMIN")
-                        .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/worker/**").hasRole("WORKER")
+                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/common/**").authenticated()
                         .anyRequest().permitAll()
                 ).addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())

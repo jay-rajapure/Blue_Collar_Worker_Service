@@ -3,23 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceHub - Blue-Collar Service Platform</title>
+    <title>WorkBuddy - Connect with Trusted Local Professionals</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔨</text></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../css/main.css" rel="stylesheet">
+    <link href="../css/workbuddy-brand.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --secondary-color: #00B4D8;
+            --accent-color: #0077B6;
+            --success-color: #06D6A0;
+            --warning-color: #FFD60A;
+            --danger-color: #FF006E;
+            --light-bg: #F8F9FA;
+            --dark-bg: #2C3E50;
+            --text-primary: #2C3E50;
+            --text-secondary: #6C757D;
+            --border-radius: 12px;
+            --shadow-light: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-medium: 0 8px 40px rgba(0,0,0,0.12);
+            --shadow-heavy: 0 16px 64px rgba(0,0,0,0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Modern Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 40px rgba(0,0,0,0.08);
+            padding: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 0.25rem 0;
+            background: rgba(255, 255, 255, 0.98) !important;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.75rem;
+            color: var(--primary-color) !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand img {
+            border: 2px solid var(--secondary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+
+        .navbar-brand i {
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-right: 8px;
+        }
+
+        .nav-link {
+            color: var(--text-primary) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--light-bg);
+            color: var(--secondary-color) !important;
+        }
+
+        /* Hero Section - Uber/Ola Style */
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-bg) 100%);
+            color: white;
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 180, 216, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 119, 182, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(6, 214, 160, 0.1) 0%, transparent 50%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .btn-modern {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary-modern {
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            color: white;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-primary-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+            color: white;
+        }
+
+        .btn-outline-modern {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-outline-modern:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: white;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            opacity: 0.8;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+
+        .hero-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Phone Mockup */
+        .phone-mockup {
+            width: 300px;
+            height: 600px;
+            background: linear-gradient(135deg, #1a1a1a, #2c3e50);
+            border-radius: 40px;
+            padding: 20px;
+            box-shadow: var(--shadow-heavy);
+            position: relative;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .app-interface {
+            padding: 30px 20px;
+            height: 100%;
+        }
+
+        .app-header {
+            margin-bottom: 30px;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .app-location {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .service-item-mini {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .service-item-mini:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .service-item-mini i {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+
+        .service-item-mini:hover i {
+            color: white;
+        }
+
+        .service-item-mini span {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Service Cards */
+        .services-section {
+            padding: 80px 0;
+            background: var(--light-bg);
+        }
+
+        .service-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: var(--shadow-light);
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--border-radius);
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .service-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .service-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 100px 0 60px;
+                text-align: center;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .phone-mockup {
+                width: 250px;
+                height: 500px;
+            }
+
+            .services-section {
+                padding: 60px 0;
+            }
+        }
+
+        /* Loading Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Floating Elements */
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(0, 180, 216, 0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .floating-element:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+        .floating-element:nth-child(2) { top: 40%; left: 80%; animation-delay: 2s; }
+        .floating-element:nth-child(3) { top: 70%; left: 20%; animation-delay: 4s; }
+        .floating-element:nth-child(4) { top: 30%; left: 70%; animation-delay: 1s; }
+    </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">
-                <i class="fas fa-tools me-2"></i>ServiceHub
+        <div class="navbar-brand">
+            <a class="navbar-brand" href="#">
+                <div class="d-flex align-items-center">
+                    <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=50&h=50&fit=crop&crop=center" 
+                         alt="WorkBuddy Logo" class="rounded-circle me-2" width="40" height="40">
+                    <span><i class="fas fa-hammer me-1"></i>WorkBuddy</span>
+                </div>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="#home">Home</a>
                     </li>
@@ -27,123 +423,144 @@
                         <a class="nav-link" href="#services">Services</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#about">About</a>
+                        <a class="nav-link" href="#how-it-works">How it Works</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="test-backend.html" target="_blank" title="Test Backend Connection">
-                            <i class="fas fa-server"></i>
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="loginDropdown" role="button" data-bs-toggle="dropdown">
+                            Get Started
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="customer-login.html">
+                                <i class="fas fa-user me-2"></i>Customer Login
+                            </a></li>
+                            <li><a class="dropdown-item" href="worker-login.html">
+                                <i class="fas fa-hard-hat me-2"></i>Worker Login
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="customer-register.html">
+                                <i class="fas fa-user-plus me-2"></i>Sign Up as Customer
+                            </a></li>
+                            <li><a class="dropdown-item" href="worker-register.html">
+                                <i class="fas fa-user-tie me-2"></i>Join as Worker
+                            </a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero Section - Uber/Ola Style -->
     <section id="home" class="hero-section">
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
         <div class="container">
             <div class="row align-items-center min-vh-100">
                 <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold text-white mb-4">
-                        Connect with Skilled Blue-Collar Workers
-                    </h1>
-                    <p class="lead text-white-50 mb-5">
-                        Find trusted plumbers, electricians, drivers, and other skilled professionals in your area. 
-                        Get quality service when you need it most.
-                    </p>
-                    <div class="d-grid gap-3 d-md-flex">
-                        <div class="dropdown">
-                            <button class="btn btn-primary btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-2"></i>Customer
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="customer-login.html">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Login
-                                </a></li>
-                                <li><a class="dropdown-item" href="customer-register.html">
-                                    <i class="fas fa-user-plus me-2"></i>Register
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="services.html">
-                                    <i class="fas fa-search me-2"></i>Browse Services
-                                </a></li>
-                                <li><a class="dropdown-item" href="my-bookings.html">
-                                    <i class="fas fa-calendar-alt me-2"></i>My Bookings
-                                </a></li>
-                            </ul>
+                    <div class="hero-content animate-fade-in">
+                        <div class="mb-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                                <i class="fas fa-star me-1"></i>Trusted by 50,000+ Customers
+                            </span>
                         </div>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-light btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-hard-hat me-2"></i>Worker
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="worker-login.html">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Login
-                                </a></li>
-                                <li><a class="dropdown-item" href="worker-register.html">
-                                    <i class="fas fa-user-plus me-2"></i>Register
-                                </a></li>
-                            </ul>
+                        <h1 class="hero-title">Professional Home Services, On-Demand</h1>
+                        <p class="hero-subtitle">Book trusted local professionals for any home service. From plumbing to electrical work - we've got you covered with verified experts.</p>
+                        
+                        <div class="hero-buttons">
+                            <a href="customer-register.html" class="btn-modern btn-primary-modern">
+                                <i class="fas fa-search"></i>
+                                Book a Service
+                            </a>
+                            <a href="worker-register.html" class="btn-modern btn-outline-modern">
+                                <i class="fas fa-tools"></i>
+                                Become a Pro
+                            </a>
                         </div>
-                        <a href="services.html" class="btn btn-success btn-lg">
-                            <i class="fas fa-rocket me-2"></i>Find Services Now
-                        </a>
+                        
+                        <div class="hero-stats">
+                            <div class="hero-stat">
+                                <div class="hero-stat-number">2,500+</div>
+                                <div class="hero-stat-label">Verified Professionals</div>
+                            </div>
+                            <div class="hero-stat">
+                                <div class="hero-stat-number">50K+</div>
+                                <div class="hero-stat-label">Services Completed</div>
+                            </div>
+                            <div class="hero-stat">
+                                <div class="hero-stat-number">4.9★</div>
+                                <div class="hero-stat-label">Average Rating</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="hero-image">
-                        <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                             alt="Blue-collar workers" class="img-fluid rounded-3 shadow-lg">
-                    </div>
+
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Services Section -->
-    <section id="services" class="py-5 bg-light">
+    <section id="services" class="services-section">
         <div class="container">
-            <div class="row">
-                <div class="col-12 text-center mb-5">
-                    <h2 class="display-5 fw-bold">Our Services</h2>
-                    <p class="lead text-muted">Professional services at your fingertips</p>
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3">Popular Services</h2>
+                    <p class="lead text-muted">Professional services delivered by verified experts in your area</p>
                 </div>
             </div>
             <div class="row g-4">
-                <div class="col-md-6 col-lg-3">
-                    <div class="service-card text-center p-4">
-                        <div class="service-icon mb-3">
-                            <i class="fas fa-wrench fa-3x text-primary"></i>
+                <div class="col-lg-3 col-md-6">
+                    <div class="service-card">
+                        <img src="https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=200&fit=crop&crop=center" 
+                             alt="Plumbing Services" class="img-fluid rounded mb-3" style="height: 160px; object-fit: cover; width: 100%;">
+                        <div class="service-icon">
+                            <i class="fas fa-wrench"></i>
                         </div>
-                        <h4>Plumbing</h4>
-                        <p class="text-muted">Professional plumbing services for all your water and pipe needs.</p>
+                        <h5 class="service-title">Plumbing</h5>
+                        <p class="service-description">Professional plumbing services including repairs, installations, and emergency fixes.</p>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="service-card text-center p-4">
-                        <div class="service-icon mb-3">
-                            <i class="fas fa-bolt fa-3x text-warning"></i>
+                <div class="col-lg-3 col-md-6">
+                    <div class="service-card">
+                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=200&fit=crop&crop=center" 
+                             alt="Electrical Services" class="img-fluid rounded mb-3" style="height: 160px; object-fit: cover; width: 100%;">
+                        <div class="service-icon">
+                            <i class="fas fa-bolt"></i>
                         </div>
-                        <h4>Electrical</h4>
-                        <p class="text-muted">Certified electricians for safe and reliable electrical work.</p>
+                        <h5 class="service-title">Electrical</h5>
+                        <p class="service-description">Safe and reliable electrical work by certified electricians for your home and office.</p>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="service-card text-center p-4">
-                        <div class="service-icon mb-3">
-                            <i class="fas fa-car fa-3x text-success"></i>
+                <div class="col-lg-3 col-md-6">
+                    <div class="service-card">
+                        <img src="https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=400&h=200&fit=crop&crop=center" 
+                             alt="Painting Services" class="img-fluid rounded mb-3" style="height: 160px; object-fit: cover; width: 100%;">
+                        <div class="service-icon">
+                            <i class="fas fa-paint-brush"></i>
                         </div>
-                        <h4>Driving</h4>
-                        <p class="text-muted">Professional drivers for transportation and delivery services.</p>
+                        <h5 class="service-title">Painting</h5>
+                        <p class="service-description">Interior and exterior painting services with premium quality materials and finishes.</p>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="service-card text-center p-4">
-                        <div class="service-icon mb-3">
-                            <i class="fas fa-tools fa-3x text-info"></i>
+                <div class="col-lg-3 col-md-6">
+                    <div class="service-card">
+                        <img src="https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=200&fit=crop&crop=center" 
+                             alt="Carpentry Services" class="img-fluid rounded mb-3" style="height: 160px; object-fit: cover; width: 100%;">
+                        <div class="service-icon">
+                            <i class="fas fa-hammer"></i>
                         </div>
-                        <h4>General Repair</h4>
-                        <p class="text-muted">Skilled workers for various repair and maintenance tasks.</p>
+                        <h5 class="service-title">Carpentry</h5>
+                        <p class="service-description">Custom carpentry work including furniture assembly, repairs, and installations.</p>
                     </div>
                 </div>
             </div>
@@ -154,104 +571,358 @@
     <section id="about" class="py-5">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h2 class="display-5 fw-bold mb-4">About ServiceHub</h2>
-                    <p class="lead mb-4">
-                        ServiceHub connects customers with skilled blue-collar workers in their area. 
-                        Our platform ensures quality service, fair pricing, and reliable professionals.
-                    </p>
-                    <div class="row g-3">
-                        <div class="col-sm-6">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                <span>Verified Workers</span>
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="position-relative">
+                        <div class="card border-0">
+                            <div class="card-body p-0">
+                                <img src="https://source.unsplash.com/800x600/?construction,workers" class="img-fluid rounded-4 w-100" alt="Professional workers">
                             </div>
                         </div>
-                        <div class="col-sm-6">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-clock text-primary me-2"></i>
-                                <span>24/7 Support</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-star text-warning me-2"></i>
-                                <span>Quality Service</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-shield-alt text-info me-2"></i>
-                                <span>Secure Platform</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Contact Information -->
-                    <div class="mt-5">
-                        <h4 class="mb-3">Contact Us</h4>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-phone text-primary me-3"></i>
-                                    <div>
-                                        <small class="text-muted">Customer Support</small>
-                                        <div class="fw-semibold">+91 98765 43210</div>
-                                    </div>
+                        <div class="position-absolute bottom-0 end-0 bg-white p-3 rounded-3 shadow-sm me-4 mb-4" style="width: 200px;">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-primary rounded-circle p-2 me-2">
+                                    <i class="fas fa-tools text-white"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">2,500+</h5>
+                                    <small class="text-muted">Verified Professionals</small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-envelope text-primary me-3"></i>
-                                    <div>
-                                        <small class="text-muted">Email Support</small>
-                                        <div class="fw-semibold">support@servicehub.com</div>
-                                    </div>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success rounded-circle p-2 me-2">
+                                    <i class="fas fa-check text-white"></i>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-headset text-primary me-3"></i>
-                                    <div>
-                                        <small class="text-muted">Emergency Helpline</small>
-                                        <div class="fw-semibold">1800-123-HELP</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-map-marker-alt text-primary me-3"></i>
-                                    <div>
-                                        <small class="text-muted">Your Location</small>
-                                        <div class="fw-semibold" id="userLocation">
-                                            <button class="btn btn-outline-primary btn-sm" onclick="getLocation()">
-                                                <i class="fas fa-location-arrow me-1"></i>Get Location
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div>
+                                    <h5 class="mb-0">98%</h5>
+                                    <small class="text-muted">Customer Satisfaction</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                         alt="Team work" class="img-fluid rounded-3 shadow">
+                    <h2 class="display-6 fw-bold mb-3">About WorkBuddy</h2>
+                    <p class="lead text-muted mb-4">Connecting homeowners with trusted professionals for all their service needs.</p>
+                    <p class="mb-3">WorkBuddy is a modern platform that connects homeowners with verified professionals for all types of home services. Our mission is to make finding reliable service providers easy, safe, and convenient.</p>
+                    <p class="mb-4">With WorkBuddy, customers can easily book services from trusted professionals in their area, while workers can find new opportunities and grow their business.</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-shield-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Verified Professionals</h6>
+                                    <p class="text-muted small mb-0">All our service providers are thoroughly vetted and verified.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-star text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Quality Service</h6>
+                                    <p class="text-muted small mb-0">Only top-rated professionals with proven track records.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-info bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-clock text-info"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">24/7 Availability</h6>
+                                    <p class="text-muted small mb-0">Emergency services available whenever you need them.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="fas fa-map-marker-alt text-warning"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Local Experts</h6>
+                                    <p class="text-muted small mb-0">Connect with professionals in your neighborhood.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-5 bg-light">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+                    <p class="lead text-muted">Simple and efficient service booking process</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 h-100 text-center">
+                        <div class="card-body p-4">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop&crop=center" 
+                                 alt="Find Service" class="img-fluid rounded mb-3" style="height: 150px; object-fit: cover; width: 100%;">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px;">
+                                <i class="fas fa-search fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">1. Find Service</h5>
+                            <p class="text-muted">Browse through our extensive list of services and professionals in your area.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 h-100 text-center">
+                        <div class="card-body p-4">
+                            <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=200&fit=crop&crop=center" 
+                                 alt="Schedule Service" class="img-fluid rounded mb-3" style="height: 150px; object-fit: cover; width: 100%;">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px;">
+                                <i class="fas fa-calendar-alt fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">2. Schedule</h5>
+                            <p class="text-muted">Book your service at a time that works best for you through our easy booking system.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 h-100 text-center">
+                        <div class="card-body p-4">
+                            <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop&crop=center" 
+                                 alt="Enjoy Service" class="img-fluid rounded mb-3" style="height: 150px; object-fit: cover; width: 100%;">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-4" style="width: 80px; height: 80px;">
+                                <i class="fas fa-smile fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">3. Enjoy Service</h5>
+                            <p class="text-muted">Relax while our verified professionals deliver quality service to your doorstep.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Reviews Section -->
+    <section id="reviews" class="py-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3">What Our Customers Say</h2>
+                    <p class="lead text-muted">Real reviews from satisfied customers across the country</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card border-0 h-100 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face" 
+                                     alt="Customer" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Rajesh Kumar</h6>
+                                    <small class="text-muted">Mumbai, Maharashtra</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <span class="ms-2 fw-bold">5.0</span>
+                            </div>
+                            <p class="text-muted mb-0">"Excellent plumbing service! The technician was professional, punctual, and fixed my water leak perfectly. Highly recommended!"</p>
+                            <div class="mt-3">
+                                <small class="text-primary fw-bold">Plumbing Service</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card border-0 h-100 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=60&h=60&fit=crop&crop=face" 
+                                     alt="Customer" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Priya Sharma</h6>
+                                    <small class="text-muted">Delhi, NCR</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <span class="ms-2 fw-bold">5.0</span>
+                            </div>
+                            <p class="text-muted mb-0">"Amazing electrical work! Quick response, fair pricing, and the electrician explained everything clearly. Will definitely use again."</p>
+                            <div class="mt-3">
+                                <small class="text-primary fw-bold">Electrical Service</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card border-0 h-100 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face" 
+                                     alt="Customer" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Amit Patel</h6>
+                                    <small class="text-muted">Bangalore, Karnataka</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <span class="ms-2 fw-bold">5.0</span>
+                            </div>
+                            <p class="text-muted mb-0">"Outstanding carpentry service! They built custom furniture exactly as I wanted. Great attention to detail and craftsmanship."</p>
+                            <div class="mt-3">
+                                <small class="text-primary fw-bold">Carpentry Service</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-lg-6">
+                    <div class="card border-0 bg-primary text-white">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face" 
+                                     alt="Customer" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Sneha Reddy</h6>
+                                    <small class="text-white-50">Hyderabad, Telangana</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <span class="ms-2 fw-bold">5.0</span>
+                            </div>
+                            <p class="mb-0">"WorkBuddy made finding a reliable painter so easy! The job was completed on time and within budget. Excellent platform!"</p>
+                            <div class="mt-3">
+                                <small class="text-warning fw-bold">Painting Service</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card border-0 bg-success text-white">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face" 
+                                     alt="Customer" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Vikram Singh</h6>
+                                    <small class="text-white-50">Pune, Maharashtra</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <span class="ms-2 fw-bold">5.0</span>
+                            </div>
+                            <p class="mb-0">"As a business owner, I've used WorkBuddy for multiple services. Always reliable, professional, and great value for money!"</p>
+                            <div class="mt-3">
+                                <small class="text-warning fw-bold">Multiple Services</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-4">
+    <footer class="bg-dark text-light py-5">
         <div class="container">
-            <div class="row">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=50&h=50&fit=crop&crop=center" 
+                             alt="WorkBuddy Logo" class="rounded-circle me-2" width="40" height="40">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-hammer me-1 text-primary"></i>WorkBuddy</h5>
+                    </div>
+                    <p class="text-muted mb-3">Connecting homeowners with trusted professionals for all their service needs. Quality, reliability, and convenience at your fingertips.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-primary"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-primary"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-primary"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-primary"><i class="fab fa-linkedin fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3">Services</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Plumbing</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Electrical</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Carpentry</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Painting</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Cleaning</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3">Company</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#about" class="text-muted text-decoration-none">About Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Careers</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Press</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Blog</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Help Center</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Safety</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Terms</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Privacy</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3">Get Started</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="customer-register.html" class="text-muted text-decoration-none">Book Service</a></li>
+                        <li class="mb-2"><a href="worker-register.html" class="text-muted text-decoration-none">Become Pro</a></li>
+                        <li class="mb-2"><a href="customer-login.html" class="text-muted text-decoration-none">Sign In</a></li>
+                        <li class="mb-2"><a href="services.html" class="text-muted text-decoration-none">Browse Services</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h5><i class="fas fa-tools me-2"></i>ServiceHub</h5>
-                    <p class="text-muted">Connecting skilled workers with customers nationwide.</p>
+                    <p class="text-muted mb-0">&copy; 2024 WorkBuddy. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="text-muted">&copy; 2024 ServiceHub. All rights reserved.</p>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-phone me-1"></i>+91 98765 43210 | 
+                        <i class="fas fa-envelope me-1"></i>support@workbuddy.com
+                    </p>
                 </div>
             </div>
         </div>
@@ -259,5 +930,30 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/main.js"></script>
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('mainNavbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
-</html>
+</html></html>

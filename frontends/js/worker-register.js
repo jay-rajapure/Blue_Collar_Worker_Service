@@ -523,7 +523,7 @@ class WorkerRegister {
                 newsletter: formData.get('newsletter') === 'on'
             };
 
-            // Call backend API
+            // Call backend API with complete worker data
             const response = await fetch(`${API_BASE_URL}/auth/signUp`, {
                 method: 'POST',
                 headers: {
@@ -532,8 +532,14 @@ class WorkerRegister {
                 body: JSON.stringify({
                     name: registrationData.firstName + ' ' + registrationData.lastName,
                     email: registrationData.email,
+                    phone: registrationData.phone,
                     passwordHash: registrationData.password,
-                    role: 'WORKER'
+                    role: 'WORKER',
+                    city: registrationData.city,
+                    address: registrationData.address + ', ' + registrationData.state + ' - ' + registrationData.pincode,
+                    experienceYears: parseInt(registrationData.experience) || 0,
+                    skills: registrationData.skills,
+                    bio: `Professional ${registrationData.specialization} service provider with ${registrationData.experience} years of experience.`
                 })
             });
 
@@ -580,22 +586,32 @@ class WorkerRegister {
 
     handleRegistrationResponse(response) {
         if (response.jwt && response.message === 'Register Success') {
-            this.showSuccessMessage(`
-                Welcome! Your professional account has been created successfully!
-                Please check your email for verification instructions.
-            `);
-            
-            // Store registration token
+            // Store enhanced user data and token
             localStorage.setItem('authToken', response.jwt);
             localStorage.setItem('userRole', response.role);
+            
+            // Store additional user information if available
+            if (response.userId) localStorage.setItem('userId', response.userId);
+            if (response.userName) localStorage.setItem('userName', response.userName);
+            if (response.userEmail) localStorage.setItem('userEmail', response.userEmail);
+            
+            // Show custom welcome message if available
+            const welcomeMessage = response.welcomeMessage || `
+                Welcome! Your professional account has been created successfully!
+                You can now start adding your services and managing bookings.
+            `;
+            this.showSuccessMessage(welcomeMessage);
             
             // Clear form
             this.form.reset();
             this.clearAllFieldStates();
             
+            // Use dashboard URL from response or fallback to worker dashboard
+            const redirectUrl = response.dashboardUrl || 'worker-dashboard.html';
+            
             // Redirect after delay
             setTimeout(() => {
-                window.location.href = 'worker-login.html';
+                window.location.href = redirectUrl;
             }, 3000);
         } else {
             this.showErrorMessage(response.message || 'Registration failed. Please try again.');

@@ -263,16 +263,25 @@ class CustomerLogin {
 
     handleLoginResponse(response) {
         if (response.jwt && response.message === 'Login Success') {
-            // Store user data and token
+            // Store enhanced user data and token
             localStorage.setItem('authToken', response.jwt);
             localStorage.setItem('userRole', response.role);
             
-            this.showSuccessMessage('Login successful! Redirecting to browse services...');
+            // Store additional user information if available
+            if (response.userId) localStorage.setItem('userId', response.userId);
+            if (response.userName) localStorage.setItem('userName', response.userName);
+            if (response.userEmail) localStorage.setItem('userEmail', response.userEmail);
             
-            // Redirect to services page (customers browse and book services)
+            // Show custom welcome message if available
+            const welcomeMessage = response.welcomeMessage || 'Login successful! Redirecting to browse services...';
+            this.showSuccessMessage(welcomeMessage);
+            
+            // Use dashboard URL from response or fallback to customer dashboard
+            const redirectUrl = response.dashboardUrl || 'customer-dashboard.html';
+            
             setTimeout(() => {
-                window.location.href = 'services.html?view=customer';
-                console.log('Redirecting customer to browse services...');
+                window.location.href = redirectUrl;
+                console.log('Redirecting customer to:', redirectUrl);
             }, 1500);
         } else {
             this.showErrorMessage(response.message || 'Login failed. Please check your credentials.');

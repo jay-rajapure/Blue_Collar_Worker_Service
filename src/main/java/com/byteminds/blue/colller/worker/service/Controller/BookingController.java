@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -27,7 +28,7 @@ public class BookingController {
     
     // Create a new booking with auto-assignment
     @PostMapping("/auto")
-    public ResponseEntity<BookingResponse> createAutoBooking(
+    public ResponseEntity<?> createAutoBooking(
             @RequestHeader("Authorization") String jwt,
             @RequestBody AutoBookingRequest bookingRequest) {
         try {
@@ -35,13 +36,14 @@ public class BookingController {
             BookingResponse booking = bookingService.createAutoBooking(bookingRequest, customer.getId());
             return new ResponseEntity<>(booking, HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(java.util.Map.of("error", "Failed to create booking", "message", e.getMessage()));
         }
     }
     
     // Create a new booking (original method)
     @PostMapping
-    public ResponseEntity<BookingResponse> createBooking(
+    public ResponseEntity<?> createBooking(
             @RequestHeader("Authorization") String jwt,
             @RequestBody BookingRequest bookingRequest) {
         try {
@@ -49,7 +51,8 @@ public class BookingController {
             BookingResponse booking = bookingService.createBooking(bookingRequest, customer.getId());
             return new ResponseEntity<>(booking, HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(java.util.Map.of("error", "Failed to create booking", "message", e.getMessage()));
         }
     }
     

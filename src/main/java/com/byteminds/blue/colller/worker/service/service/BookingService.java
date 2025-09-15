@@ -284,8 +284,16 @@ public class BookingService {
         response.setId(booking.getId());
         response.setCustomerId(booking.getCustomer().getId());
         response.setCustomerName(booking.getCustomer().getName());
-        response.setWorkerId(booking.getWorker().getId());
-        response.setWorkerName(booking.getWorker().getName());
+        
+        // Handle null worker case for auto-assignment scenarios
+        if (booking.getWorker() != null) {
+            response.setWorkerId(booking.getWorker().getId());
+            response.setWorkerName(booking.getWorker().getName());
+        } else {
+            response.setWorkerId(null);
+            response.setWorkerName("Auto-assigned (Pending)");
+        }
+        
         response.setWorkId(booking.getWork().getId());
         response.setWorkTitle(booking.getWork().getTitle());
         response.setDescription(booking.getDescription());

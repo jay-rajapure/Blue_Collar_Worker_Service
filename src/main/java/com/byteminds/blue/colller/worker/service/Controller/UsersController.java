@@ -49,24 +49,62 @@ public class UsersController {
     private PasswordEncoder passwordEncoder;
     // ✅ Create a new user
     @PostMapping("/signUp")
-    public ResponseEntity<AuthResponse> createUser(@RequestBody Users users) throws Exception {
-        Optional<Users> isEmailExist =usersRepository.findByEmail(users.getEmail());
-        if(isEmailExist.isPresent())
-        {
-            throw new Exception("Email Already Used with another account ");
-        }
+    public ResponseEntity<AuthResponse> createUser(@RequestBody Users users) {
+        try {
+            // Validate input data
+            if (users.getEmail() == null || users.getEmail().trim().isEmpty()) {
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setMessage("Email is required");
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+            
+            // Check for password in either field (passwordHash or password)
+            String inputPassword = users.getPassword(); // Use the transient password field
+            if (inputPassword == null || inputPassword.trim().isEmpty()) {
+                // Fall back to passwordHash field for backward compatibility
+                inputPassword = users.getPasswordHash();
+            }
+            if (inputPassword == null || inputPassword.trim().isEmpty()) {
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setMessage("Password is required");
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+            
+            if (users.getName() == null || users.getName().trim().isEmpty()) {
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setMessage("Name is required");
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+            if (users.getRole() == null) {
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setMessage("Role is required");
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        
+            Optional<Users> isEmailExist = usersRepository.findByEmail(users.getEmail());
+            if(isEmailExist.isPresent()) {
+                AuthResponse errorResponse = new AuthResponse();
+                errorResponse.setMessage("Email already registered. Please use a different email or try logging in.");
+                return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+            }
 
         Users createdUser = new Users();
         createdUser.setEmail(users.getEmail());
         createdUser.setName(users.getName());
         createdUser.setRole(users.getRole());
         createdUser.setPasswordHash(passwordEncoder.encode(users.getPasswordHash()));
+        
+        // Set additional fields if provided
+        if (users.getPhone() != null) createdUser.setPhone(users.getPhone());
+        if (users.getCity() != null) createdUser.setCity(users.getCity());
+        if (users.getAddress() != null) createdUser.setAddress(users.getAddress());
+        
         Users savedUser = usersRepository.save(createdUser);
 
-        Authentication authentication =new UsernamePasswordAuthenticationToken(users.getEmail(),users.getPasswordHash());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(users.getEmail(), users.getPasswordHash());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt=jwtProvider.generateToken(authentication);
+        String jwt = jwtProvider.generateToken(authentication);
         AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
         authResponse.setMessage("Register Success");
@@ -82,14 +120,22 @@ public class UsersController {
             authResponse.setDashboardUrl("worker-dashboard.html");
             authResponse.setWelcomeMessage("Registration successful! Welcome to your worker dashboard.");
         } else if (Role.CUSTOMER.equals(savedUser.getRole())) {
-            authResponse.setDashboardUrl("services.html?view=customer");
+            authResponse.setDashboardUrl("customer-dashboard.html");
             authResponse.setWelcomeMessage("Registration successful! Start browsing services.");
         } else {
-            authResponse.setDashboardUrl("services.html");
-            authResponse.setWelcomeMessage("Registration successful! Welcome to ServiceHub.");
+            authResponse.setDashboardUrl("index.html");
+            authResponse.setWelcomeMessage("Registration successful! Welcome to WorkBuddy.");
         }
 
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
+            
+        } catch (Exception e) {
+            System.out.println("Registration failed: " + e.getMessage());
+            e.printStackTrace();
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setMessage("Registration failed: " + e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/signIn")
@@ -143,11 +189,11 @@ public class UsersController {
                     authResponse.setDashboardUrl("worker-dashboard.html");
                     authResponse.setWelcomeMessage("Welcome back! Ready to manage your services?");
                 } else if (Role.CUSTOMER.equals(user.getRole())) {
-                    authResponse.setDashboardUrl("services.html?view=customer");
+                    authResponse.setDashboardUrl("customer-dashboard.html");
                     authResponse.setWelcomeMessage("Welcome! Find the perfect service for your needs.");
                 } else {
-                    authResponse.setDashboardUrl("services.html");
-                    authResponse.setWelcomeMessage("Welcome to ServiceHub!");
+                    authResponse.setDashboardUrl("index.html");
+                    authResponse.setWelcomeMessage("Welcome to WorkBuddy!");
                 }
             }
 

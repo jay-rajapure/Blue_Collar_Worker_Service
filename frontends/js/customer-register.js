@@ -444,7 +444,7 @@ class CustomerRegister {
                 newsletter: formData.get('newsletter') === 'on'
             };
 
-            // Call backend API
+            // Call backend API with complete user data
             const response = await fetch(`${API_BASE_URL}/auth/signUp`, {
                 method: 'POST',
                 headers: {
@@ -453,8 +453,11 @@ class CustomerRegister {
                 body: JSON.stringify({
                     name: registrationData.firstName + ' ' + registrationData.lastName,
                     email: registrationData.email,
+                    phone: registrationData.phone,
                     passwordHash: registrationData.password,
-                    role: 'CUSTOMER'
+                    role: 'CUSTOMER',
+                    city: registrationData.city,
+                    address: registrationData.address + ', ' + registrationData.state + ' - ' + registrationData.pincode
                 })
             });
 
@@ -479,19 +482,29 @@ class CustomerRegister {
 
     handleRegistrationResponse(response) {
         if (response.jwt && response.message === 'Register Success') {
-            this.showSuccessMessage('Account created successfully! Please check your email for verification.');
-            
-            // Store registration token
+            // Store enhanced user data and token
             localStorage.setItem('authToken', response.jwt);
             localStorage.setItem('userRole', response.role);
+            
+            // Store additional user information if available
+            if (response.userId) localStorage.setItem('userId', response.userId);
+            if (response.userName) localStorage.setItem('userName', response.userName);
+            if (response.userEmail) localStorage.setItem('userEmail', response.userEmail);
+            
+            // Show custom welcome message if available
+            const welcomeMessage = response.welcomeMessage || 'Account created successfully! Welcome to ServiceHub!';
+            this.showSuccessMessage(welcomeMessage);
             
             // Clear form
             this.form.reset();
             this.clearAllFieldStates();
             
+            // Use dashboard URL from response or fallback to customer dashboard
+            const redirectUrl = response.dashboardUrl || 'customer-dashboard.html';
+            
             // Redirect after delay
             setTimeout(() => {
-                window.location.href = 'customer-login.html';
+                window.location.href = redirectUrl;
             }, 2000);
         } else {
             this.showErrorMessage(response.message || 'Registration failed. Please try again.');

@@ -81,24 +81,6 @@ class ServicesManager {
                 controlsDiv.id = 'workerControls';
                 controlsDiv.className = 'd-flex gap-2';
                 
-                // Toggle between "My Services" and "Work Opportunities"
-                const isShowingOpportunities = new URLSearchParams(window.location.search).get('opportunities') === 'true';
-                
-                const toggleBtn = document.createElement('button');
-                toggleBtn.className = 'btn btn-outline-primary';
-                toggleBtn.innerHTML = isShowingOpportunities ? 
-                    '<i class="fas fa-user me-2"></i>My Services' : 
-                    '<i class="fas fa-search me-2"></i>Find Opportunities';
-                toggleBtn.onclick = () => {
-                    const currentUrl = new URL(window.location);
-                    if (isShowingOpportunities) {
-                        currentUrl.searchParams.delete('opportunities');
-                    } else {
-                        currentUrl.searchParams.set('opportunities', 'true');
-                    }
-                    window.location.href = currentUrl.toString();
-                };
-                
                 const addServiceBtn = document.createElement('button');
                 addServiceBtn.id = 'addServiceBtn';
                 addServiceBtn.className = 'btn btn-success';
@@ -107,33 +89,15 @@ class ServicesManager {
                     window.location.href = 'add-service.html';
                 };
                 
-                controlsDiv.appendChild(toggleBtn);
                 controlsDiv.appendChild(addServiceBtn);
                 rightDiv.appendChild(controlsDiv);
             }
         }
         
-        // Update search placeholder and page title based on current view
+        // Update search placeholder for worker view
         const searchInput = document.getElementById('searchServices');
-        const isShowingOpportunities = new URLSearchParams(window.location.search).get('opportunities') === 'true';
-        
         if (searchInput) {
-            searchInput.placeholder = isShowingOpportunities ? 
-                'Search for work opportunities, collaborations...' : 
-                'Search your services...';
-        }
-        
-        // Update page title if showing opportunities
-        if (isShowingOpportunities) {
-            const pageTitle = document.querySelector('h2.fw-bold.text-primary');
-            const pageDescription = document.querySelector('h2.fw-bold.text-primary + p.text-muted');
-            
-            if (pageTitle) {
-                pageTitle.innerHTML = '<i class="fas fa-search me-2"></i>Work Opportunities';
-            }
-            if (pageDescription) {
-                pageDescription.textContent = 'Find collaboration opportunities and additional work';
-            }
+            searchInput.placeholder = 'Search your services...';
         }
     }
 
@@ -177,9 +141,8 @@ class ServicesManager {
             // Determine which endpoint to call based on user role
             let endpoint;
             if (this.viewMode === 'worker') {
-                // Workers can see their own services OR available opportunities
-                const showOpportunities = new URLSearchParams(window.location.search).get('opportunities') === 'true';
-                endpoint = showOpportunities ? '/api/works/opportunities' : '/api/works/worker';
+                // Workers only see their own services
+                endpoint = '/api/works/worker';
             } else {
                 // Customers see available services they can book
                 endpoint = '/api/works/customer';
@@ -800,9 +763,17 @@ window.viewServiceDetails = function(serviceId) {
 window.bookService = function(workId, workerId) {
     // Check if user is logged in
     const authToken = localStorage.getItem('authToken');
+    const userRole = localStorage.getItem('userRole');
+    
     if (!authToken) {
         alert('Please login to book a service');
         window.location.href = 'customer-login.html';
+        return;
+    }
+    
+    // Check if user is a customer (only customers can book services)
+    if (userRole !== 'CUSTOMER') {
+        alert('Only customers can book services. Workers should provide services, not book them.');
         return;
     }
     

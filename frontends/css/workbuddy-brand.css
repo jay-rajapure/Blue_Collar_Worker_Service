@@ -1,0 +1,197 @@
+/* WorkBuddy Brand Styles */
+:root {
+    --workbuddy-primary: #1a1a1a;
+    --workbuddy-secondary: #00B4D8;
+    --workbuddy-accent: #0077B6;
+    --workbuddy-success: #06D6A0;
+    --workbuddy-warning: #FFD60A;
+    --workbuddy-danger: #FF006E;
+    --workbuddy-light: #F8F9FA;
+    --workbuddy-dark: #2C3E50;
+}
+
+/* WorkBuddy Logo Styles */
+.workbuddy-logo {
+    font-weight: 800;
+    color: var(--workbuddy-primary);
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.workbuddy-logo:hover {
+    color: var(--workbuddy-secondary);
+    text-decoration: none;
+}
+
+.workbuddy-logo i {
+    background: linear-gradient(135deg, var(--workbuddy-secondary), var(--workbuddy-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-right: 8px;
+}
+
+.workbuddy-logo img {
+    border: 2px solid var(--workbuddy-secondary);
+    transition: transform 0.3s ease;
+    margin-right: 8px;
+}
+
+.workbuddy-logo:hover img {
+    transform: scale(1.05);
+}
+
+/* WorkBuddy Brand Buttons */
+.btn-workbuddy-primary {
+    background: linear-gradient(135deg, var(--workbuddy-secondary), var(--workbuddy-accent));
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-workbuddy-primary:hover {
+    background: linear-gradient(135deg, #0099cc, #006699);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 180, 216, 0.3);
+    color: white;
+}
+
+.btn-workbuddy-outline {
+    border: 2px solid var(--workbuddy-secondary);
+    color: var(--workbuddy-secondary);
+    background: transparent;
+    font-weight: 600;
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-workbuddy-outline:hover {
+    background: var(--workbuddy-secondary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* WorkBuddy Brand Colors */
+.text-workbuddy-primary {
+    color: var(--workbuddy-primary) !important;
+}
+
+.text-workbuddy-secondary {
+    color: var(--workbuddy-secondary) !important;
+}
+
+.text-workbuddy-accent {
+    color: var(--workbuddy-accent) !important;
+}
+
+.bg-workbuddy-primary {
+    background-color: var(--workbuddy-primary) !important;
+}
+
+.bg-workbuddy-secondary {
+    background-color: var(--workbuddy-secondary) !important;
+}
+
+.bg-workbuddy-light {
+    background-color: var(--workbuddy-light) !important;
+}
+
+/* WorkBuddy Brand Gradients */
+.bg-workbuddy-gradient {
+    background: linear-gradient(135deg, var(--workbuddy-secondary), var(--workbuddy-accent));
+}
+
+.bg-workbuddy-gradient-dark {
+    background: linear-gradient(135deg, var(--workbuddy-primary), var(--workbuddy-dark));
+}
+
+/* WorkBuddy Card Styles */
+.workbuddy-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.workbuddy-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* WorkBuddy Brand Badges */
+.badge-workbuddy {
+    background: linear-gradient(135deg, var(--workbuddy-secondary), var(--workbuddy-accent));
+    color: white;
+    border-radius: 25px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+}
+
+/* WorkBuddy Footer Styles */
+.workbuddy-footer {
+    background: var(--workbuddy-dark);
+    color: var(--workbuddy-light);
+}
+
+.workbuddy-footer h5,
+.workbuddy-footer h6 {
+    color: white;
+}
+
+.workbuddy-footer a {
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+
+.workbuddy-footer a:hover {
+    color: var(--workbuddy-secondary);
+}
+
+/* WorkBuddy Service Icons */
+.workbuddy-service-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, var(--workbuddy-secondary), var(--workbuddy-accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* WorkBuddy Animations */
+@keyframes workbuddy-fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.workbuddy-animate-fade-in {
+    animation: workbuddy-fadeInUp 0.6s ease-out;
+}
+
+/* WorkBuddy Rating Stars */
+.workbuddy-stars {
+    color: var(--workbuddy-warning);
+}
+
+/* WorkBuddy Price Display */
+.workbuddy-price {
+    background: linear-gradient(135deg, var(--workbuddy-success), #45a049);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: bold;
+    display: inline-block;
+}

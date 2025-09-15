@@ -2,6 +2,7 @@ package com.byteminds.blue.colller.worker.service.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -18,8 +19,12 @@ public class Users {
     private String email;
     private String phone;
     
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordHash;
+    
+    // Temporary field for registration - not stored in DB
+    @Transient
+    private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;  // WORKER, CUSTOMER, ADMIN
@@ -136,6 +141,15 @@ public class Users {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+    
+    // Password getter/setter for JSON input (registration)
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getPhone() {

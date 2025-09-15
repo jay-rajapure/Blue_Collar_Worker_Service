@@ -57,6 +57,9 @@ class BookingSystem {
         if (locationBtn) {
             locationBtn.addEventListener('click', this.useCurrentLocation.bind(this));
         }
+
+        // Payment method change handlers
+        this.setupPaymentMethodHandlers();
     }
 
     setupDateTimeValidation() {
@@ -78,6 +81,31 @@ class BookingSystem {
             // Set default time restrictions (8 AM to 8 PM)
             timeInput.addEventListener('change', this.validateServiceTime.bind(this));
         }
+    }
+
+    setupPaymentMethodHandlers() {
+        const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+        const upiDetails = document.getElementById('upiPaymentDetails');
+        const cardDetails = document.getElementById('cardPaymentDetails');
+
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', (e) => {
+                const selectedMethod = e.target.value;
+                
+                // Hide all payment details first
+                if (upiDetails) upiDetails.style.display = 'none';
+                if (cardDetails) cardDetails.style.display = 'none';
+                
+                // Show relevant payment details
+                if (selectedMethod === 'UPI' && upiDetails) {
+                    upiDetails.style.display = 'block';
+                } else if (selectedMethod === 'CARD' && cardDetails) {
+                    cardDetails.style.display = 'block';
+                }
+                
+                this.updateSummary();
+            });
+        });
     }
 
     setupLocationServices() {
@@ -170,6 +198,26 @@ class BookingSystem {
         if (isEmergency) {
             total *= 1.5; // 50% emergency surcharge
         }
+        
+        // Get selected payment method
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        const paymentMethod = selectedPaymentMethod ? selectedPaymentMethod.value : 'UPI';
+        
+        // Update summary with payment method
+        const existingPaymentInfo = document.getElementById('summaryPaymentMethod');
+        if (!existingPaymentInfo) {
+            const summaryContainer = document.querySelector('.booking-summary .row');
+            const paymentDiv = document.createElement('div');
+            paymentDiv.className = 'col-6';
+            paymentDiv.innerHTML = `
+                <small>Payment Method:</small>
+                <div class="fw-semibold" id="summaryPaymentMethod">${this.getPaymentMethodDisplay(paymentMethod)}</div>
+            `;
+            summaryContainer.appendChild(paymentDiv);
+        } else {
+            existingPaymentInfo.textContent = this.getPaymentMethodDisplay(paymentMethod);
+        }
+        
         document.getElementById('summaryTotal').textContent = `₹${total.toFixed(2)}`;
     }
 
@@ -356,12 +404,12 @@ class BookingSystem {
             return;
         }
 
-        const submitBtn = this.form.querySelector('button[type=\"submit\"]');
+        const submitBtn = this.form.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         
         submitBtn.classList.add('loading');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class=\"fas fa-spinner fa-spin me-2\"></i>Creating Booking...';
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Booking...';
 
         try {
             const bookingData = this.getBookingData();
@@ -370,6 +418,20 @@ class BookingSystem {
             if (!authToken) {
                 throw new Error('Please login to make a booking');
             }
+            
+            // Handle payment if UPI is selected
+            if (bookingData.paymentMethod === 'UPI' && bookingData.paymentDetails.upiId) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing Payment...';
+                
+                const totalAmount = this.calculateTotalAmount();
+                const paymentResult = await this.processUPIPayment(bookingData, totalAmount);
+                
+                // Add payment info to booking data
+                bookingData.paymentId = paymentResult.paymentId;
+                bookingData.paymentStatus = paymentResult.status;
+            }
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Confirming Booking...';
 
             const response = await fetch(`${API_BASE_URL}/api/bookings/auto`, {
                 method: 'POST',
@@ -405,6 +467,14 @@ class BookingSystem {
         // Combine date and time
         const scheduledDate = new Date(`${date}T${time}`);
         
+        // Get payment method details
+        const paymentMethod = formData.get('paymentMethod') || 'UPI';
+        const paymentData = {
+            method: paymentMethod,
+            upiId: formData.get('upiId'),
+            upiApp: formData.get('upiApp')
+        };
+        
         return {
             workId: this.currentService.id,
             // No workerId needed - system will auto-assign
@@ -412,7 +482,9 @@ class BookingSystem {
             scheduledDate: scheduledDate.toISOString(),
             customerAddress: formData.get('address'),
             customerPhone: formData.get('phone'),
-            specialInstructions: formData.get('specialInstructions')
+            specialInstructions: formData.get('specialInstructions'),
+            paymentMethod: paymentMethod,
+            paymentDetails: paymentData
         };
     }
 
@@ -425,6 +497,20 @@ class BookingSystem {
                 isValid = false;
             }
         });
+
+        // Validate payment method
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        if (!selectedPaymentMethod) {
+            this.showError('Please select a payment method');
+            isValid = false;
+        } else if (selectedPaymentMethod.value === 'UPI') {
+            // Validate UPI ID if UPI is selected
+            const upiId = document.getElementById('upiId').value.trim();
+            if (upiId && !this.validateUPIId(upiId)) {
+                this.showFieldError(document.getElementById('upiId'), 'Please enter a valid UPI ID (e.g., name@paytm)');
+                isValid = false;
+            }
+        }
 
         // Check terms agreement
         const agreeTerms = document.getElementById('agreeTerms');
@@ -615,7 +701,7 @@ class BookingSystem {
                         <i class="fas fa-phone me-2"></i>Need Help?
                     </h6>
                     <p class="mb-1">Contact our support team at <strong>+91 98765 43210</strong></p>
-                    <p class="mb-0">Email: <strong>support@servicehub.com</strong></p>
+                    <p class="mb-0">Email: <strong>support@workbuddy.com</strong></p>
                 </div>
             </div>
             
@@ -820,6 +906,17 @@ class BookingSystem {
         return total.toFixed(2);
     }
     
+    calculateTotalAmount() {
+        if (!this.currentService) return 0;
+        
+        let total = this.currentService.charges;
+        const isEmergency = document.getElementById('isEmergency').checked;
+        if (isEmergency) {
+            total *= 1.5; // 50% emergency surcharge
+        }
+        return total;
+    }
+    
     simulateNotifications() {
         // Simulate email notification
         setTimeout(() => {
@@ -873,5 +970,121 @@ class BookingSystem {
             `;
             document.head.appendChild(toastStyles);
         }
+    }
+    
+    getPaymentMethodDisplay(method) {
+        switch(method) {
+            case 'UPI': return 'UPI Payment';
+            case 'CARD': return 'Card Payment';
+            case 'CASH': return 'Cash on Service';
+            default: return method;
+        }
+    }
+    
+    validateUPIId(upiId) {
+        // Basic UPI ID validation pattern: username@provider
+        const upiPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z]+$/;
+        return upiPattern.test(upiId);
+    }
+    
+    async processUPIPayment(bookingData, totalAmount) {
+        const upiId = bookingData.paymentDetails.upiId;
+        const upiApp = bookingData.paymentDetails.upiApp;
+        
+        if (!upiId) {
+            throw new Error('UPI ID is required for UPI payment');
+        }
+        
+        // Generate UPI payment link
+        const paymentData = {
+            payeeName: 'WorkBuddy',
+            payeeVPA: 'workbuddy@paytm', // Your business UPI ID
+            amount: totalAmount,
+            transactionNote: `Booking #${Date.now()}`,
+            transactionRef: `WB${Date.now()}`
+        };
+        
+        // Create UPI payment URL
+        const upiUrl = this.generateUPIUrl(paymentData);
+        
+        // Show UPI payment modal
+        this.showUPIPaymentModal(upiUrl, paymentData);
+        
+        return new Promise((resolve, reject) => {
+            // This would typically integrate with a payment gateway
+            // For demo purposes, we'll simulate payment confirmation
+            setTimeout(() => {
+                const confirmed = confirm('Payment initiated. Have you completed the payment?');
+                if (confirmed) {
+                    resolve({
+                        paymentId: `UPI_${Date.now()}`,
+                        status: 'SUCCESS',
+                        amount: totalAmount,
+                        method: 'UPI'
+                    });
+                } else {
+                    reject(new Error('Payment cancelled by user'));
+                }
+            }, 2000);
+        });
+    }
+    
+    generateUPIUrl(paymentData) {
+        const params = new URLSearchParams({
+            pa: paymentData.payeeVPA,
+            pn: paymentData.payeeName,
+            am: paymentData.amount,
+            tn: paymentData.transactionNote,
+            tr: paymentData.transactionRef
+        });
+        
+        return `upi://pay?${params.toString()}`;
+    }
+    
+    showUPIPaymentModal(upiUrl, paymentData) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade show';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fab fa-google-pay me-2"></i>UPI Payment
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-4">
+                            <i class="fab fa-google-pay text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h6>Complete Payment of ₹${paymentData.amount}</h6>
+                        <p class="text-muted">Scan QR code or click the button below to pay via UPI</p>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="${upiUrl}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-mobile-alt me-2"></i>Pay with UPI App
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary" onclick="this.closest('.modal').remove()">
+                                Cancel Payment
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>Click the "Pay with UPI App" button to open your UPI app and complete the payment.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Auto-remove modal after 30 seconds
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.remove();
+            }
+        }, 30000);
     }
 }
