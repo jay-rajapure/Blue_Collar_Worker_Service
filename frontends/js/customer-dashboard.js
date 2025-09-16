@@ -345,38 +345,43 @@ class CustomerDashboard {
         const workerInitials = this.getWorkerInitials(service.workerName);
         const ratingStars = this.generateStars(service.rating);
         
+        // Handle worker profile image
+        const workerAvatarContent = service.workerProfileImage ? 
+            `<img src="data:image/jpeg;base64,${service.workerProfileImage}" alt="${service.workerName}" class="worker-photo">` :
+            workerInitials;
+        
         return `
-            <div class=\"service-card\" data-service-id=\"${service.id}\">
-                <div class=\"service-header\">
-                    <div class=\"worker-avatar\">${workerInitials}</div>
-                    <div class=\"service-info\">
-                        <div class=\"service-title\">${service.title}</div>
-                        <div class=\"worker-name\">by ${service.workerName}</div>
-                        <div class=\"service-rating\">
-                            <div class=\"rating-stars\">${ratingStars}</div>
+            <div class="service-card" data-service-id="${service.id}">
+                <div class="service-header">
+                    <div class="worker-avatar">${workerAvatarContent}</div>
+                    <div class="service-info">
+                        <div class="service-title">${service.title}</div>
+                        <div class="worker-name">by ${service.workerName}</div>
+                        <div class="service-rating">
+                            <div class="rating-stars">${ratingStars}</div>
                             <span>${service.rating} (${service.totalReviews} reviews)</span>
-                            <span class=\"service-distance\">${service.distance ? `${service.distance} km` : '1.2 km'}</span>
+                            <span class="service-distance">${service.distance ? `${service.distance} km` : '1.2 km'}</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class=\"service-meta\">
+                <div class="service-meta">
                     <div>
-                        <div class=\"service-price\">₹${service.charges}</div>
-                        <div class=\"service-duration\">${service.estimatedTimeHours}h estimated</div>
+                        <div class="service-price">₹${service.charges}</div>
+                        <div class="service-duration">${service.estimatedTimeHours}h estimated</div>
                     </div>
                 </div>
                 
-                <div class=\"service-description\">
+                <div class="service-description">
                     ${this.truncateText(service.description, 120)}
                 </div>
                 
-                <div class=\"service-actions\">
-                    <button class=\"btn-book\" onclick=\"bookService(${service.id}, ${service.workerId})\">
-                        <i class=\"fas fa-calendar-check me-2\"></i>Book Now
+                <div class="service-actions">
+                    <button class="btn-book" onclick="bookService(${service.id}, ${service.workerId})">
+                        <i class="fas fa-calendar-check me-2"></i>Book Now
                     </button>
-                    <button class=\"btn-contact\" onclick=\"contactWorker(${service.workerId})\" title=\"Contact Worker\">
-                        <i class=\"fas fa-message\"></i>
+                    <button class="btn-contact" onclick="contactWorker(${service.workerId})" title="Contact Worker">
+                        <i class="fas fa-message"></i>
                     </button>
                 </div>
             </div>
@@ -493,9 +498,9 @@ class CustomerDashboard {
         alertElement.className = `alert alert-${type} alert-dismissible fade show position-fixed alert-custom`;
         alertElement.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
         alertElement.innerHTML = `
-            <i class=\"fas fa-${this.getAlertIcon(type)} me-2\"></i>
+            <i class="fas fa-${this.getAlertIcon(type)} me-2"></i>
             ${message}
-            <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
         document.body.appendChild(alertElement);

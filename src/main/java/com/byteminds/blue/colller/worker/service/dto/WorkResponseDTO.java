@@ -21,6 +21,7 @@ public class WorkResponseDTO {
     private Double workerRating;
     private Integer workerExperience;
     private String workerSkills;
+    private String workerProfileImage; // Base64 encoded profile image
     
     // Constructors
     public WorkResponseDTO() {}
@@ -29,7 +30,8 @@ public class WorkResponseDTO {
                           Double estimatedTimeHours, String category, Double latitude, 
                           Double longitude, Boolean isAvailable, LocalDateTime createdAt,
                           Long workerId, String workerName, String workerEmail, 
-                          Double workerRating, Integer workerExperience, String workerSkills) {
+                          Double workerRating, Integer workerExperience, String workerSkills,
+                          String workerProfileImage) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -46,6 +48,7 @@ public class WorkResponseDTO {
         this.workerRating = workerRating;
         this.workerExperience = workerExperience;
         this.workerSkills = workerSkills;
+        this.workerProfileImage = workerProfileImage;
     }
 
     // Getters and setters
@@ -96,4 +99,7 @@ public class WorkResponseDTO {
     
     public String getWorkerSkills() { return workerSkills; }
     public void setWorkerSkills(String workerSkills) { this.workerSkills = workerSkills; }
+    
+    public String getWorkerProfileImage() { return workerProfileImage; }
+    public void setWorkerProfileImage(String workerProfileImage) { this.workerProfileImage = workerProfileImage; }
 }

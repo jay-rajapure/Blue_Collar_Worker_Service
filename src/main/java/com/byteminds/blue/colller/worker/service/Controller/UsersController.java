@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -292,5 +293,41 @@ public class UsersController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ✅ Update worker availability status
+    @PatchMapping("/worker/status")
+    public ResponseEntity<?> updateWorkerStatus(
+            @RequestHeader("Authorization") String jwt,
+            @RequestBody Map<String, Boolean> statusUpdate) {
+        try {
+            Users user = userService.findByJwtToken(jwt);
+            
+            // Check if user is a worker
+            if (!Role.WORKER.equals(user.getRole())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Only workers can update availability status"));
+            }
+            
+            Boolean isAvailable = statusUpdate.get("isAvailable");
+            if (isAvailable == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "isAvailable field is required"));
+            }
+            
+            // Update worker availability
+            user.setIsAvailable(isAvailable);
+            Users updatedUser = usersRepository.save(user);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Status updated successfully",
+                "isAvailable", updatedUser.getIsAvailable()
+            ));
+            
+        } catch (Exception e) {
+            System.err.println("Error updating worker status: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to update status", "message", e.getMessage()));
+        }
     }
 }

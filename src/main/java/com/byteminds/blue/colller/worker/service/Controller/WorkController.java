@@ -78,12 +78,21 @@ public class WorkController {
             }
             
             System.out.println("Fetching available works for customers...");
-            // Return only available works that customers can book
+            // Return only available works from active workers that customers can book
             List<Work> availableWorks = workService.getAvailableWorksForCustomers();
-            System.out.println("Found " + availableWorks.size() + " available works");
+            
+            // Filter to only include works from active/available workers
+            List<Work> activeWorkerWorks = availableWorks.stream()
+                .filter(work -> work.getWorker() != null && 
+                              work.getWorker().getIsAvailable() != null && 
+                              work.getWorker().getIsAvailable() && 
+                              work.getAvailable())
+                .collect(Collectors.toList());
+            
+            System.out.println("Found " + activeWorkerWorks.size() + " works from active workers out of " + availableWorks.size() + " total works");
             
             // Convert to DTO to avoid serialization issues
-            List<WorkResponseDTO> workDTOs = availableWorks.stream()
+            List<WorkResponseDTO> workDTOs = activeWorkerWorks.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
             
@@ -101,6 +110,13 @@ public class WorkController {
     // Helper method to convert Work entity to DTO
     private WorkResponseDTO convertToDTO(Work work) {
         Users worker = work.getWorker();
+        
+        // Convert profile image to Base64 string if available
+        String profileImageBase64 = null;
+        if (worker.getProfileImage() != null) {
+            profileImageBase64 = java.util.Base64.getEncoder().encodeToString(worker.getProfileImage());
+        }
+        
         return new WorkResponseDTO(
             work.getId(),
             work.getTitle(),
@@ -117,7 +133,8 @@ public class WorkController {
             worker.getEmail(),
             worker.getRating(),
             worker.getExperienceYears(),
-            worker.getSkills()
+            worker.getSkills(),
+            profileImageBase64
         );
     }
 

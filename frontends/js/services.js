@@ -240,9 +240,15 @@ class ServicesManager {
         const isAvailable = service.isAvailable !== false; // Default to true if not specified
         const createdDate = service.createdAt ? new Date(service.createdAt).toLocaleDateString() : 'Recently';
         
-        // Calculate rating display (mock for now)
-        const rating = this.getMockRating();
-        const ratingStars = this.generateStars(rating.score);
+        // Calculate rating display
+        const rating = service.workerRating || 4.5;
+        const ratingStars = this.generateStars(rating);
+        const reviewCount = Math.floor(Math.random() * 50) + 10; // Mock review count
+        
+        // Worker avatar - show photo if available, otherwise initials
+        const workerAvatarContent = service.workerProfileImage 
+            ? `<img src="data:image/jpeg;base64,${service.workerProfileImage}" alt="${workerName}" class="w-100 h-100 rounded-circle" style="object-fit: cover;">`
+            : workerInitials;
         
         return `
             <div class="col-md-6 col-lg-4 mb-4">
@@ -251,7 +257,7 @@ class ServicesManager {
                     <div class="service-header mb-3">
                         <div class="d-flex align-items-start">
                             <div class="worker-avatar me-3">
-                                ${workerInitials}
+                                ${workerAvatarContent}
                             </div>
                             <div class="flex-grow-1">
                                 <h5 class="service-title mb-1">${service.title}</h5>
@@ -316,7 +322,7 @@ class ServicesManager {
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="rating-display">
                                 <div class="rating-stars">${ratingStars}</div>
-                                <small class="text-muted">${rating.score} (${rating.count} reviews)</small>
+                                <small class="text-muted">${rating} (${reviewCount} reviews)</small>
                             </div>
                             <div class="service-stats">
                                 <small class="text-muted">

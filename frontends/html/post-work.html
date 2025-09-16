@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Work Request - WorkBuddy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
+    <style>
+        .form-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .category-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .category-option {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .category-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .category-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .location-input {
+            position: relative;
+        }
+        .urgent-toggle {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .budget-range {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand text-white" href="customer-dashboard.html">
+                <i class="fas fa-tools me-2"></i>WorkBuddy
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="customer-dashboard.html">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="services.html">
+                            <i class="fas fa-briefcase me-1"></i>Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" href="post-work.html">
+                            <i class="fas fa-plus me-1"></i>Post Work
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="society.html">
+                            <i class="fas fa-users me-1"></i>Society
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="my-bookings.html">
+                            <i class="fas fa-calendar me-1"></i>My Bookings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i><span id="userName">Customer</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="form-container">
+        <div class="container">
+            <div class="form-card">
+                <div class="text-center mb-4">
+                    <h2 class="text-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Post a Work Request
+                    </h2>
+                    <p class="text-muted">Tell us what work you need done and get connected with skilled workers</p>
+                </div>
+
+                <form id="postWorkForm">
+                    <!-- Title and Description -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="workTitle" class="form-label">Work Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="workTitle" placeholder="e.g., Fix kitchen sink leak" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="workDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="workDescription" rows="4" 
+                                placeholder="Describe the work you need done in detail..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Category Selection -->
+                    <div class="mb-3">
+                        <label class="form-label">Work Category <span class="text-danger">*</span></label>
+                        <div class="category-selection">
+                            <div class="category-option" data-category="plumbing">
+                                <i class="fas fa-wrench fa-2x mb-2 text-primary"></i>
+                                <div>Plumbing</div>
+                            </div>
+                            <div class="category-option" data-category="electrical">
+                                <i class="fas fa-bolt fa-2x mb-2 text-warning"></i>
+                                <div>Electrical</div>
+                            </div>
+                            <div class="category-option" data-category="painting">
+                                <i class="fas fa-paint-brush fa-2x mb-2 text-info"></i>
+                                <div>Painting</div>
+                            </div>
+                            <div class="category-option" data-category="carpentry">
+                                <i class="fas fa-hammer fa-2x mb-2 text-success"></i>
+                                <div>Carpentry</div>
+                            </div>
+                            <div class="category-option" data-category="cleaning">
+                                <i class="fas fa-broom fa-2x mb-2 text-primary"></i>
+                                <div>Cleaning</div>
+                            </div>
+                            <div class="category-option" data-category="appliance-repair">
+                                <i class="fas fa-tools fa-2x mb-2 text-danger"></i>
+                                <div>Appliance Repair</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedCategory" required>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="workLocation" class="form-label">Location/City <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="workLocation" placeholder="e.g., Delhi" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="workAddress" class="form-label">Full Address <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="workAddress" 
+                                placeholder="Complete address for the work location" required>
+                        </div>
+                    </div>
+
+                    <!-- Budget Range -->
+                    <div class="mb-3">
+                        <label class="form-label">Budget Range (₹)</label>
+                        <div class="budget-range">
+                            <div>
+                                <label for="budgetMin" class="form-label small">Minimum</label>
+                                <input type="number" class="form-control" id="budgetMin" placeholder="500" min="0">
+                            </div>
+                            <div>
+                                <label for="budgetMax" class="form-label small">Maximum</label>
+                                <input type="number" class="form-control" id="budgetMax" placeholder="2000" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preferred Date and Urgency -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="preferredDate" class="form-label">Preferred Date</label>
+                            <input type="datetime-local" class="form-control" id="preferredDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phoneNumber" class="form-label">Contact Number <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phoneNumber" placeholder="+91 9876543210" required>
+                        </div>
+                    </div>
+
+                    <!-- Urgent Toggle -->
+                    <div class="urgent-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isUrgent">
+                            <label class="form-check-label" for="isUrgent">
+                                <strong>This is urgent work</strong>
+                                <small class="d-block text-muted">Mark this if you need the work done immediately</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-paper-plane me-2"></i>Post Work Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/post-work.js"></script>
+</body>
+</html>

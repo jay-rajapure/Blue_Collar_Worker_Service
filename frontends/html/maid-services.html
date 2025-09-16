@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maid Services - WorkBuddy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
+    <style>
+        .maid-services-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .maid-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        .maid-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+        }
+        .pricing-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .worker-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+        }
+        .filter-tabs {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .service-type-badge {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            background: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand text-white" href="customer-dashboard.html">
+                <i class="fas fa-tools me-2"></i>WorkBuddy
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="customer-dashboard.html">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="services.html">
+                            <i class="fas fa-briefcase me-1"></i>Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="post-work.html">
+                            <i class="fas fa-plus me-1"></i>Post Work
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="society.html">
+                            <i class="fas fa-users me-1"></i>Society
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" href="maid-services.html">
+                            <i class="fas fa-female me-1"></i>Maid Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="caretaker-services.html">
+                            <i class="fas fa-user-md me-1"></i>Caretaker Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="my-bookings.html">
+                            <i class="fas fa-calendar me-1"></i>My Bookings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i><span id="userName">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="maid-services-container">
+        <div class="container">
+            <!-- Header -->
+            <div class="maid-card">
+                <div class="text-center mb-4">
+                    <h2 class="text-primary">
+                        <i class="fas fa-female me-2"></i>Professional Maid Services
+                    </h2>
+                    <p class="text-muted">Find reliable maids for your daily and monthly household needs</p>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <div class="text-center">
+                        <button class="tab-button active" data-filter="all" onclick="filterServices('all')">
+                            <i class="fas fa-globe me-1"></i>All Services
+                        </button>
+                        <button class="tab-button" data-filter="daily" onclick="filterServices('daily')">
+                            <i class="fas fa-sun me-1"></i>Daily
+                        </button>
+                        <button class="tab-button" data-filter="monthly" onclick="filterServices('monthly')">
+                            <i class="fas fa-calendar me-1"></i>Monthly
+                        </button>
+                        <button class="tab-button" data-filter="available" onclick="filterServices('available')">
+                            <i class="fas fa-check-circle me-1"></i>Available Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Service Type Filter -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <select class="form-select" id="serviceTypeFilter" onchange="applyFilters()">
+                            <option value="">All Service Types</option>
+                            <option value="cooking">Cooking</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="utensil">Utensil Cleaning</option>
+                            <option value="laundry">Laundry</option>
+                            <option value="elderly">Elderly Care</option>
+                            <option value="child">Child Care</option>
+                            <option value="gardening">Gardening</option>
+                            <option value="other">Other Services</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search maid services...">
+                            <button class="btn btn-outline-primary" type="button" onclick="applyFilters()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maid Services List -->
+            <div id="maidServicesList">
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center">
+                    <div class="maid-card">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading maid services...</p>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="d-none">
+                    <div class="maid-card text-center">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No maid services found</h4>
+                        <p class="text-muted">Try adjusting your filters or check back later for new services.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/maid-services.js"></script>
+</body>
+</html>

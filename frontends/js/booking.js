@@ -424,11 +424,18 @@ class BookingSystem {
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing Payment...';
                 
                 const totalAmount = this.calculateTotalAmount();
-                const paymentResult = await this.processUPIPayment(bookingData, totalAmount);
-                
-                // Add payment info to booking data
-                bookingData.paymentId = paymentResult.paymentId;
-                bookingData.paymentStatus = paymentResult.status;
+                try {
+                    const paymentResult = await this.processUPIPayment(bookingData, totalAmount);
+                    
+                    // Add payment info to booking data
+                    bookingData.paymentId = paymentResult.paymentId;
+                    bookingData.paymentStatus = paymentResult.status;
+                } catch (paymentError) {
+                    // Payment failed or cancelled, but still allow booking creation
+                    console.warn('Payment failed:', paymentError.message);
+                    bookingData.paymentStatus = 'PENDING';
+                    // Continue with booking creation
+                }
             }
             
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Confirming Booking...';
@@ -998,6 +1005,29 @@ class BookingSystem {
         // Generate UPI payment link
         const paymentData = {
             payeeName: 'WorkBuddy',
+            payeeAddress: 'workbuddy@paytm',
+            amount: totalAmount,
+            transactionNote: `Booking #${Date.now()}`,
+            transactionRef: `WB${Date.now()}`
+        };
+        
+        // Create UPI URL
+        const upiUrl = this.generateUPIUrl(paymentData);
+        
+        // Instead of launching UPI directly, show modal with instructions
+        return new Promise((resolve, reject) => {
+            this.showUPIPaymentModal(upiUrl, paymentData, resolve, reject);
+        });
+    }
+    
+    generateUPIUrl(paymentData) {
+        const params = new URLSearchParams({
+            pa: paymentData.payeeAddress,
+            pn: paymentData.payeeName,
+            am: paymentData.amount,
+            tn: paymentData.transactionNote,
+            tr: paymentData.transactionRef
+        });
             payeeVPA: 'workbuddy@paytm', // Your business UPI ID
             amount: totalAmount,
             transactionNote: `Booking #${Date.now()}`,
@@ -1038,13 +1068,12 @@ class BookingSystem {
             tr: paymentData.transactionRef
         });
         
-        return `upi://pay?${params.toString()}`;
-    }
     
-    showUPIPaymentModal(upiUrl, paymentData) {
+    showUPIPaymentModal(upiUrl, paymentData, resolve, reject) {
         const modal = document.createElement('div');
         modal.className = 'modal fade show';
         modal.style.display = 'block';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
         modal.innerHTML = `
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -1058,33 +1087,67 @@ class BookingSystem {
                             <i class="fab fa-google-pay text-primary" style="font-size: 3rem;"></i>
                         </div>
                         <h6>Complete Payment of ₹${paymentData.amount}</h6>
-                        <p class="text-muted">Scan QR code or click the button below to pay via UPI</p>
+                        <p class="text-muted">Choose your payment method below</p>
                         
                         <div class="d-grid gap-2 mt-4">
-                            <a href="${upiUrl}" class="btn btn-primary btn-lg">
-                                <i class="fas fa-mobile-alt me-2"></i>Pay with UPI App
-                            </a>
-                            <button type="button" class="btn btn-outline-secondary" onclick="this.closest('.modal').remove()">
-                                Cancel Payment
+                            <button type="button" class="btn btn-success btn-lg" onclick="window.upiPaymentSuccess()">
+                                <i class="fas fa-check-circle me-2"></i>Simulate Payment Success
+                            </button>
+                            <button type="button" class="btn btn-warning btn-lg" onclick="window.upiPaymentPending()">
+                                <i class="fas fa-clock me-2"></i>Simulate Payment Pending
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="window.upiPaymentCancel()">
+                                <i class="fas fa-times me-2"></i>Cancel Payment
                             </button>
                         </div>
                         
                         <div class="alert alert-info mt-3">
                             <i class="fas fa-info-circle me-2"></i>
-                            <small>Click the "Pay with UPI App" button to open your UPI app and complete the payment.</small>
+                            <small><strong>Demo Mode:</strong> This is a simulation. In production, this would integrate with actual UPI payment gateway.</small>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <small class="text-muted">UPI URL: ${upiUrl}</small>
                         </div>
                     </div>
                 </div>
             </div>
         `;
         
+        // Set up global functions for payment simulation
+        window.upiPaymentSuccess = () => {
+            modal.remove();
+            resolve({
+                paymentId: `PAY_${Date.now()}`,
+                status: 'SUCCESS',
+                transactionId: `TXN_${Date.now()}`,
+                amount: paymentData.amount
+            });
+        };
+        
+        window.upiPaymentPending = () => {
+            modal.remove();
+            resolve({
+                paymentId: `PAY_${Date.now()}`,
+                status: 'PENDING',
+                transactionId: `TXN_${Date.now()}`,
+                amount: paymentData.amount
+            });
+        };
+        
+        window.upiPaymentCancel = () => {
+            modal.remove();
+            reject(new Error('Payment cancelled by user'));
+        };
+        
         document.body.appendChild(modal);
         
-        // Auto-remove modal after 30 seconds
+        // Auto-remove modal after 60 seconds
         setTimeout(() => {
             if (modal.parentNode) {
                 modal.remove();
+                reject(new Error('Payment timeout'));
             }
-        }, 30000);
+        }, 60000);
     }
 }

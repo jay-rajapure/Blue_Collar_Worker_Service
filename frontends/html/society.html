@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Society - WorkBuddy Community</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
+    <style>
+        .society-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .society-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .work-request-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        .work-request-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .category-badge {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+        }
+        .urgent-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .budget-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        .worker-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .filter-tabs {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand text-white" href="customer-dashboard.html">
+                <i class="fas fa-tools me-2"></i>WorkBuddy
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="customer-dashboard.html">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="services.html">
+                            <i class="fas fa-briefcase me-1"></i>Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="post-work.html">
+                            <i class="fas fa-plus me-1"></i>Post Work
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="society.html">
+                            <i class="fas fa-users me-1"></i>Society
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="maid-services.html">
+                            <i class="fas fa-female me-1"></i>Maid Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="caretaker-services.html">
+                            <i class="fas fa-user-md me-1"></i>Caretaker Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="my-bookings.html">
+                            <i class="fas fa-calendar me-1"></i>My Bookings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i><span id="userName">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="society-container">
+        <div class="container">
+            <!-- Header -->
+            <div class="society-card">
+                <div class="text-center mb-4">
+                    <h2 class="text-primary">
+                        <i class="fas fa-users me-2"></i>WorkBuddy Society
+                    </h2>
+                    <p class="text-muted">Connect with your community and discover work opportunities nearby</p>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <div class="text-center">
+                        <button class="tab-button active" data-filter="all" onclick="filterRequests('all')">
+                            <i class="fas fa-globe me-1"></i>All Requests
+                        </button>
+                        <button class="tab-button" data-filter="my-requests" onclick="filterRequests('my-requests')">
+                            <i class="fas fa-user me-1"></i>My Requests
+                        </button>
+                        <button class="tab-button" data-filter="urgent" onclick="filterRequests('urgent')">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Urgent
+                        </button>
+                        <button class="tab-button" data-filter="nearby" onclick="filterRequests('nearby')">
+                            <i class="fas fa-map-marker-alt me-1"></i>Nearby
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                            <option value="">All Categories</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="painting">Painting</option>
+                            <option value="carpentry">Carpentry</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="appliance-repair">Appliance Repair</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search work requests...">
+                            <button class="btn btn-outline-primary" type="button" onclick="applyFilters()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Work Requests List -->
+            <div id="workRequestsList">
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center">
+                    <div class="society-card">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading community work requests...</p>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="d-none">
+                    <div class="society-card text-center">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No work requests found</h4>
+                        <p class="text-muted">Try adjusting your filters or check back later for new requests.</p>
+                        <a href="post-work.html" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Post Your First Request
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Work Request Button (Fixed) -->
+            <div class="position-fixed bottom-0 end-0 p-3">
+                <a href="post-work.html" class="btn btn-primary btn-lg rounded-circle" style="width: 60px; height: 60px;" title="Post Work Request">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/society.js"></script>
+</body>
+</html>

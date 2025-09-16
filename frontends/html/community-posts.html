@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Posts - WorkBuddy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
+    <style>
+        .community-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .community-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .post-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        .post-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .category-badge {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+        }
+        .urgent-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .filter-tabs {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .post-type-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+        }
+        .service-request-badge {
+            background: #17a2b8;
+            color: white;
+        }
+        .service-offer-badge {
+            background: #28a745;
+            color: white;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand text-white" href="#" id="dashboardLink">
+                <i class="fas fa-tools me-2"></i>WorkBuddy
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto" id="navLinks">
+                    <!-- Navigation links will be populated by JavaScript -->
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i><span id="userName">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="community-container">
+        <div class="container">
+            <!-- Header -->
+            <div class="community-card">
+                <div class="text-center mb-4">
+                    <h2 class="text-primary">
+                        <i class="fas fa-users me-2"></i>Community Posts
+                    </h2>
+                    <p class="text-muted">Connect with service providers and customers in your community</p>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <div class="text-center">
+                        <button class="tab-button active" data-filter="all" onclick="filterPosts('all')">
+                            <i class="fas fa-globe me-1"></i>All Posts
+                        </button>
+                        <button class="tab-button" data-filter="my-posts" onclick="filterPosts('my-posts')">
+                            <i class="fas fa-user me-1"></i>My Posts
+                        </button>
+                        <button class="tab-button" data-filter="requests" onclick="filterPosts('requests')">
+                            <i class="fas fa-hand-paper me-1"></i>Service Requests
+                        </button>
+                        <button class="tab-button" data-filter="offers" onclick="filterPosts('offers')">
+                            <i class="fas fa-hands-helping me-1"></i>Service Offers
+                        </button>
+                        <button class="tab-button" data-filter="urgent" onclick="filterPosts('urgent')">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Urgent
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                            <option value="">All Categories</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="painting">Painting</option>
+                            <option value="carpentry">Carpentry</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="appliance-repair">Appliance Repair</option>
+                            <option value="maid-service">Maid Service</option>
+                            <option value="caretaker">Caretaker</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search posts...">
+                            <button class="btn btn-outline-primary" type="button" onclick="applyFilters()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posts List -->
+            <div id="postsList">
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center">
+                    <div class="community-card">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading community posts...</p>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="d-none">
+                    <div class="community-card text-center">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No posts found</h4>
+                        <p class="text-muted">Try adjusting your filters or check back later for new posts.</p>
+                        <button class="btn btn-primary" id="createPostButton">
+                            <i class="fas fa-plus me-2"></i>Create Post
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Post Button (Fixed) -->
+            <div class="position-fixed bottom-0 end-0 p-3">
+                <button class="btn btn-primary btn-lg rounded-circle" id="createPostFloatingButton" title="Create Post">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/community-posts.js"></script>
+</body>
+</html>

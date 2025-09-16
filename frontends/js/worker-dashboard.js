@@ -187,6 +187,12 @@ class WorkerDashboard {
             btn.removeAttribute('onclick');
             btn.addEventListener('click', this.editProfile.bind(this));
         });
+
+        // Worker status toggle event
+        const statusToggle = document.getElementById('workerStatusToggle');
+        if (statusToggle) {
+            statusToggle.addEventListener('change', this.handleStatusToggle.bind(this));
+        }
     }
 
     updateUI() {
@@ -210,7 +216,11 @@ class WorkerDashboard {
             profileCategory: document.getElementById('profileCategory'),
             profileRating: document.getElementById('profileRating'),
             profileExperience: document.getElementById('profileExperience'),
-            profileAvatar: document.getElementById('profileAvatar')
+            profileAvatar: document.getElementById('profileAvatar'),
+            workerInitials: document.getElementById('workerInitials'),
+            workerPhoto: document.getElementById('workerPhoto'),
+            statusToggle: document.getElementById('workerStatusToggle'),
+            statusLabel: document.getElementById('statusLabel')
         };
 
         if (this.userInfo) {
@@ -222,7 +232,24 @@ class WorkerDashboard {
             if (elements.profileCategory) elements.profileCategory.textContent = this.userInfo.category;
             if (elements.profileRating) elements.profileRating.textContent = this.userInfo.rating;
             if (elements.profileExperience) elements.profileExperience.textContent = this.userInfo.experience;
-            if (elements.profileAvatar) elements.profileAvatar.textContent = initials;
+            
+            // Handle profile photo
+            if (elements.workerInitials) elements.workerInitials.textContent = initials;
+            if (this.userInfo.profileImage && elements.workerPhoto) {
+                elements.workerPhoto.src = `data:image/jpeg;base64,${this.userInfo.profileImage}`;
+                elements.workerPhoto.style.display = 'block';
+                if (elements.workerInitials) elements.workerInitials.style.display = 'none';
+            } else {
+                if (elements.workerPhoto) elements.workerPhoto.style.display = 'none';
+                if (elements.workerInitials) elements.workerInitials.style.display = 'flex';
+            }
+            
+            // Update status toggle
+            const isAvailable = this.userInfo.isAvailable !== false; // Default to true if undefined
+            if (elements.statusToggle) {
+                elements.statusToggle.checked = isAvailable;
+            }
+            this.updateStatusLabel(isAvailable);
         }
     }
 
@@ -309,6 +336,61 @@ class WorkerDashboard {
     editProfile() {
         // For now, show an alert. In a real app, this would open a profile edit modal/page
         this.showInfo('Profile editing feature will be implemented soon. You can update your profile information here.');
+    }
+
+    async handleStatusToggle(event) {
+        const isAvailable = event.target.checked;
+        const authToken = localStorage.getItem('authToken');
+        
+        if (!authToken) {
+            this.showError('Please login to update status');
+            event.target.checked = !isAvailable; // Revert toggle
+            return;
+        }
+
+        try {
+            // Show loading state
+            this.showLoading(true);
+            
+            // Call API to update worker availability status
+            const response = await fetch(`${API_BASE_URL}/auth/worker/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isAvailable: isAvailable })
+            });
+
+            if (response.ok) {
+                // Update UI
+                this.updateStatusLabel(isAvailable);
+                this.userInfo.isAvailable = isAvailable;
+                
+                // Show success message
+                this.showSuccess(`Status updated to ${isAvailable ? 'Active' : 'Inactive'} successfully!`);
+            } else {
+                throw new Error('Failed to update status');
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+            this.showError('Failed to update status. Please try again.');
+            // Revert toggle state
+            event.target.checked = !isAvailable;
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    updateStatusLabel(isAvailable) {
+        const statusLabel = document.getElementById('statusLabel');
+        if (statusLabel) {
+            if (isAvailable) {
+                statusLabel.innerHTML = '<span class="badge bg-success">Active</span>';
+            } else {
+                statusLabel.innerHTML = '<span class="badge bg-secondary">Inactive</span>';
+            }
+        }
     }
 
     showLoading(show) {
@@ -445,5 +527,104 @@ window.logout = function() {
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    window.workerDashboard = new WorkerDashboard();
+    const availabilityToggle = document.getElementById('availabilityToggle');
+    const statusText = document.getElementById('statusText');
+    
+    // Initialize dashboard
+    async function initializeDashboard() {
+        try {
+            // Check authentication
+            if (!checkAuthentication()) {
+                return;
+            }
+
+            // Show loading overlay
+            showLoading(true);
+
+            try {
+                // Load user data and dashboard information
+                await loadUserProfile();
+                await loadDashboardData();
+                setupEventListeners();
+                updateUI();
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                showError('Failed to load dashboard data. Please refresh the page.');
+            } finally {
+                showLoading(false);
+            }
+        } catch (error) {
+            console.error('Error initializing dashboard:', error);
+        }
+    }
+    
+    // Set up availability toggle
+    function setupAvailabilityToggle() {
+        availabilityToggle.addEventListener('change', async function() {
+            const isChecked = this.checked;
+            
+            try {
+                const response = await fetch('/api/users/update-availability', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({
+                        isAvailable: isChecked
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    statusText.textContent = isChecked ? 'Available' : 'Not Available';
+                    statusText.className = isChecked ? 'text-success' : 'text-danger';
+                    
+                    // Update local storage
+                    localStorage.setItem('userAvailability', isChecked);
+                    
+                    // Show success message
+                    showNotification('Status updated successfully!', 'success');
+                } else {
+                    // Revert toggle on error
+                    this.checked = !isChecked;
+                    const error = await response.json();
+                    showNotification('Error updating status: ' + (error.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                // Revert toggle on error
+                this.checked = !isChecked;
+                console.error('Error updating availability:', error);
+                showNotification('Error updating status. Please try again.', 'error');
+            }
+        });
+    }
+    
+    // Load worker stats
+    async function loadWorkerStats() {
+        try {
+            const response = await fetch('/api/users/worker-stats', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            });
+            
+            if (response.ok) {
+                const stats = await response.json();
+                updateStatsDisplay(stats);
+                
+                // Set initial availability toggle state
+                const isAvailable = stats.isAvailable !== undefined ? stats.isAvailable : true;
+                availabilityToggle.checked = isAvailable;
+                statusText.textContent = isAvailable ? 'Available' : 'Not Available';
+                statusText.className = isAvailable ? 'text-success' : 'text-danger';
+            }
+        } catch (error) {
+            console.error('Error loading worker stats:', error);
+        }
+    }
+    
+    // Initialize dashboard
+    initializeDashboard();
 });

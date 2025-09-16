@@ -59,6 +59,8 @@ public class Users {
     
     @Column(nullable = true)
     private Double longitude;
+
+
     
     // Profile image
     @Lob

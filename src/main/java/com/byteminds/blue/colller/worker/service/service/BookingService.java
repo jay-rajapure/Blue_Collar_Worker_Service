@@ -66,16 +66,20 @@ public class BookingService {
         // Save booking first to get ID
         Booking savedBooking = bookingRepository.save(booking);
         
-        // Auto-assign best worker
-        Users assignedWorker = workerAssignmentService.assignBestWorker(savedBooking, work);
-        
-        if (assignedWorker != null) {
-            savedBooking.setWorker(assignedWorker);
-            savedBooking.setStatus(BookingStatus.WORKER_ASSIGNED);
-            savedBooking = bookingRepository.save(savedBooking);
-        } else {
-            // No worker available - keep status as PENDING
-            throw new Exception("No available workers found for this service");
+        // Try auto-assign best worker (but don't fail if none available)
+        try {
+            Users assignedWorker = workerAssignmentService.assignBestWorker(savedBooking, work);
+            
+            if (assignedWorker != null) {
+                savedBooking.setWorker(assignedWorker);
+                savedBooking.setStatus(BookingStatus.WORKER_ASSIGNED);
+                savedBooking = bookingRepository.save(savedBooking);
+            }
+            // If no worker available, keep the booking as PENDING
+        } catch (Exception e) {
+            // Log the error but don't fail the booking creation
+            System.err.println("Worker assignment failed: " + e.getMessage());
+            // Booking remains with status PENDING and null worker
         }
         
         return convertToResponse(savedBooking);

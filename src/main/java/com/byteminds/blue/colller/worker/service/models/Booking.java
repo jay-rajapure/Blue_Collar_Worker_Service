@@ -15,7 +15,7 @@ public class Booking {
     private Users customer;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "worker_id", nullable = false)
+    @JoinColumn(name = "worker_id", nullable = true)
     private Users worker;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,6 +52,7 @@ public class Booking {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
     
     @PrePersist
     protected void onCreate() {

@@ -290,23 +290,28 @@ class ServiceHub {
     }
 
     handleSuccessRedirect(formType) {
-        // Simulate redirect behavior
+        // Only redirect on actual form success, not on errors
         setTimeout(() => {
             switch (formType) {
                 case 'customer-login':
                     console.log('Redirecting to customer dashboard...');
+                    // window.location.href = 'customer-dashboard.html';
                     break;
                 case 'worker-login':
                     console.log('Redirecting to worker dashboard...');
+                    // window.location.href = 'worker-dashboard.html';
                     break;
                 case 'customer-register':
                     console.log('Redirecting to customer verification...');
+                    // window.location.href = 'customer-login.html';
                     break;
                 case 'worker-register':
                     console.log('Redirecting to worker verification...');
+                    // window.location.href = 'worker-login.html';
                     break;
                 default:
-                    console.log('Redirecting to homepage...');
+                    console.log('Form submitted successfully');
+                    // Don't redirect by default
             }
         }, 1500);
     }

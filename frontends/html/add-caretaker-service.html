@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Caretaker Service - WorkBuddy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
+    <style>
+        .add-service-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .add-service-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        .service-type-card {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .service-type-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .service-type-card.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+        .pricing-option {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .pricing-option.active {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand text-white" href="worker-dashboard.html">
+                <i class="fas fa-tools me-2"></i>WorkBuddy
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="worker-dashboard.html">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="my-services.html">
+                            <i class="fas fa-briefcase me-1"></i>My Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" href="add-caretaker-service.html">
+                            <i class="fas fa-user-md me-1"></i>Add Caretaker Service
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="my-bookings.html">
+                            <i class="fas fa-calendar me-1"></i>My Bookings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i><span id="userName">Worker</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="add-service-container">
+        <div class="container">
+            <div class="add-service-card">
+                <div class="text-center mb-4">
+                    <h2 class="text-primary">
+                        <i class="fas fa-user-md me-2"></i>Add Caretaker Service
+                    </h2>
+                    <p class="text-muted">Provide professional caretaker services to your community</p>
+                </div>
+
+                <form id="caretakerServiceForm">
+                    <!-- Hidden input for service type -->
+                    <input type="hidden" id="serviceType" name="serviceType">
+                    
+                    <!-- Service Type Selection -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Select Service Type</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="service-type-card" data-service="elderly-care">
+                                    <div class="service-icon">
+                                        <i class="fas fa-walking"></i>
+                                    </div>
+                                    <h6 class="text-center">Elderly Care</h6>
+                                    <p class="text-center text-muted small">Care for senior citizens</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="service-type-card" data-service="child-care">
+                                    <div class="service-icon">
+                                        <i class="fas fa-child"></i>
+                                    </div>
+                                    <h6 class="text-center">Child Care</h6>
+                                    <p class="text-center text-muted small">Professional childcare services</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="service-type-card" data-service="pet-care">
+                                    <div class="service-icon">
+                                        <i class="fas fa-paw"></i>
+                                    </div>
+                                    <h6 class="text-center">Pet Care</h6>
+                                    <p class="text-center text-muted small">Pet sitting and care</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="service-type-card" data-service="property-care">
+                                    <div class="service-icon">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <h6 class="text-center">Property Care</h6>
+                                    <p class="text-center text-muted small">Home and property maintenance</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="service-type-card" data-service="garden-care">
+                                    <div class="service-icon">
+                                        <i class="fas fa-seedling"></i>
+                                    </div>
+                                    <h6 class="text-center">Garden Care</h6>
+                                    <p class="text-center text-muted small">Gardening and landscaping</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="service-type-card" data-service="security">
+                                    <div class="service-icon">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <h6 class="text-center">Security</h6>
+                                    <p class="text-center text-muted small">Security services</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="service-type-card" data-service="other">
+                                    <div class="service-icon">
+                                        <i class="fas fa-concierge-bell"></i>
+                                    </div>
+                                    <h6 class="text-center">Other Services</h6>
+                                    <p class="text-center text-muted small">Custom caretaker services</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service Details -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Service Details</h5>
+                        <div class="mb-3">
+                            <label for="serviceName" class="form-label">Service Name</label>
+                            <input type="text" class="form-control" id="serviceName" name="serviceName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe your caretaker service in detail..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Options -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Pricing Options</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="pricing-option">
+                                    <h6><i class="fas fa-clock me-2 text-warning"></i>Hourly Rate</h6>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" class="form-control" id="hourlyRate" name="hourlyRate" placeholder="0.00" step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="pricing-option">
+                                    <h6><i class="fas fa-sun me-2 text-success"></i>Daily Rate</h6>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" class="form-control" id="dailyRate" name="dailyRate" placeholder="0.00" step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="pricing-option">
+                                    <h6><i class="fas fa-calendar me-2 text-info"></i>Monthly Rate</h6>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" class="form-control" id="monthlyRate" name="monthlyRate" placeholder="0.00" step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Availability -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Availability</h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isAvailable" name="isAvailable" checked>
+                            <label class="form-check-label" for="isAvailable">Service is currently available</label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus-circle me-2"></i>Add Caretaker Service
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/add-caretaker-service.js"></script>
+</body>
+</html>

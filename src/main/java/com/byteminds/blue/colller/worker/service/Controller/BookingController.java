@@ -18,6 +18,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/bookings")
+@CrossOrigin(origins = "*")
 public class BookingController {
     
     @Autowired
@@ -223,7 +224,7 @@ public class BookingController {
         }
     }
     
-    // Accept worker assignment (worker action)
+    // Accept worker assignment (worker accepts)
     @PutMapping("/{id}/accept-assignment")
     public ResponseEntity<BookingResponse> acceptWorkerAssignment(
             @PathVariable Long id,
@@ -241,7 +242,7 @@ public class BookingController {
         }
     }
     
-    // Reject worker assignment (worker action)
+    // Reject worker assignment (worker rejects)
     @PutMapping("/{id}/reject-assignment")
     public ResponseEntity<BookingResponse> rejectWorkerAssignment(
             @PathVariable Long id,
@@ -258,6 +259,33 @@ public class BookingController {
             return ResponseEntity.ok(booking);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // Negotiate price (customer initiates negotiation)
+    @PostMapping("/{id}/negotiate")
+    public ResponseEntity<?> negotiatePrice(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String jwt,
+            @RequestParam Double proposedAmount,
+            @RequestParam String message) {
+        try {
+            Users customer = usersService.findByJwtToken(jwt);
+            if (!"CUSTOMER".equals(customer.getRole().toString())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Only customers can negotiate prices"));
+            }
+            
+            // This would call a method in BookingService to initiate negotiation
+            // For now, we'll just return a success message
+            return ResponseEntity.ok(Map.of(
+                "message", "Price negotiation initiated successfully",
+                "bookingId", id,
+                "proposedAmount", proposedAmount
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Failed to initiate negotiation"));
         }
     }
 }
